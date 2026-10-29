@@ -721,7 +721,7 @@ export const getAccentColorOptions = () => [
 	{ value: '#006400', label: $L('Dark Green') },
 	{ value: '#708090', label: $L('Slate') },
 	{ value: '#4b0082', label: $L('Indigo') },
-	{ value: '#00a4dc', label: $L('Moonfin Cyan') },
+	{ value: '#E71414', label: $L('Moonfin Cyan') },
 	{ value: '#ff2e92', label: $L('Neon Magenta') }
 ];
 

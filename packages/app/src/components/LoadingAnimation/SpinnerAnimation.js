@@ -3,8 +3,8 @@ import {useEffect, useRef} from 'react';
 import css from './LoadingAnimation.module.less';
 
 const SWEEP = Math.PI * 1.35;
-const PURPLE = [170, 92, 195];
-const CYAN = [0, 164, 220];
+const PURPLE = [188, 188, 188];
+const CYAN = [231, 20, 20];
 
 // The arc fades in from nothing to purple over its first stretch, then turns cyan toward the
 // head. Past the head, the round end caps included, it stays cyan.

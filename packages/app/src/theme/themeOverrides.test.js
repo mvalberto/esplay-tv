@@ -14,7 +14,7 @@ describe('buildThemeOverrideCss', () => {
 
 	it('emits literal theme colors instead of custom properties', () => {
 		const css = buildThemeOverrideCss(resolveThemeById('moonfin'));
-		expect(css).toContain('rgb(0, 164, 220)');
+		expect(css).toContain('rgb(231, 20, 20)');
 		expect(css).not.toContain('var(--theme');
 	});
 

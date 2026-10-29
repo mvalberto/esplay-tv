@@ -83,7 +83,7 @@
 }
 
 .appBarScrolled {
-	background-image: linear-gradient(rgba(0, 164, 220, 0.08), rgba(0, 164, 220, 0.08));
+	background-image: linear-gradient(rgba(231, 20, 20, 0.08), rgba(231, 20, 20, 0.08));
 }
 
 .appBarTitle {
@@ -141,7 +141,7 @@
 	font-weight: 700;
 	line-height: (17.16 * @dp);
 	letter-spacing: (1.2 * @dp);
-	color: var(--theme-accent, #00a4dc);
+	color: var(--theme-accent, #E71414);
 }
 
 // A group with nothing to call it keeps the gap a header would have left
@@ -186,8 +186,8 @@
 	&:focus {
 		outline: none;
 		background: #fff;
-		border-color: rgba(0, 164, 220, 0.72);
-		box-shadow: 0 0 (17.2 * @dp) (0.5 * @dp) rgba(0, 164, 220, 0.22);
+		border-color: rgba(231, 20, 20, 0.72);
+		box-shadow: 0 0 (17.2 * @dp) (0.5 * @dp) rgba(231, 20, 20, 0.22);
 	}
 
 	:global(.perf-low) &:focus {
@@ -202,7 +202,7 @@
 }
 
 .listItemSelected {
-	border-color: var(--theme-accent, #00a4dc);
+	border-color: var(--theme-accent, #E71414);
 }
 
 
@@ -216,8 +216,8 @@
 	margin-right: (14 * @dp);
 	flex-shrink: 0;
 	border-radius: (14 * @dp);
-	border: 1px solid rgba(0, 164, 220, 0.42);
-	background: rgba(0, 164, 220, 0.14);
+	border: 1px solid rgba(231, 20, 20, 0.42);
+	background: rgba(231, 20, 20, 0.14);
 	color: rgba(255, 255, 255, 0.78);
 
 	svg {
@@ -226,8 +226,8 @@
 	}
 
 	.listItem:focus & {
-		border-color: rgba(0, 164, 220, 0.64);
-		background: rgba(0, 164, 220, 0.22);
+		border-color: rgba(231, 20, 20, 0.64);
+		background: rgba(231, 20, 20, 0.22);
 		color: rgba(0, 0, 0, @soft-ink);
 	}
 }
@@ -405,7 +405,7 @@
 	}
 
 	&:focus {
-		background: rgba(0, 164, 220, 0.18);
+		background: rgba(231, 20, 20, 0.18);
 		border-color: transparent;
 		box-shadow: none;
 
@@ -449,7 +449,7 @@
 }
 
 .plainCheckboxOn {
-	color: #00a4dc;
+	color: #E71414;
 }
 
 .chevronIcon {
@@ -471,10 +471,10 @@
 	box-sizing: border-box;
 	max-width: (280 * @dp);
 	padding: (8 * @dp + @border-rest) (10 * @dp + @border-rest);
-	border: 1px solid rgba(0, 164, 220, 0.35);
+	border: 1px solid rgba(231, 20, 20, 0.35);
 	border-radius: (12 * @dp);
-	background: rgba(0, 164, 220, 0.1);
-	color: var(--theme-accent, #00a4dc);
+	background: rgba(231, 20, 20, 0.1);
+	color: var(--theme-accent, #E71414);
 	font-size: (11 * @dp);
 	font-weight: 600;
 	line-height: (14.67 * @dp);
@@ -566,8 +566,8 @@
 }
 
 .toggleOn {
-	border-color: var(--theme-accent, #00a4dc);
-	background: var(--theme-accent, #00a4dc);
+	border-color: var(--theme-accent, #E71414);
+	background: var(--theme-accent, #E71414);
 }
 
 .toggleThumb {
@@ -624,7 +624,7 @@
 	height: (6 * @dp);
 	margin-top: (-3 * @dp);
 	border-radius: (3 * @dp);
-	background: var(--theme-accent, #00a4dc);
+	background: var(--theme-accent, #E71414);
 }
 
 .sliderTick {
@@ -644,7 +644,7 @@
 	height: (20 * @dp);
 	margin: (-10 * @dp) 0 0 (-10 * @dp);
 	border-radius: 50%;
-	background: var(--theme-accent, #00a4dc);
+	background: var(--theme-accent, #E71414);
 	box-shadow: 0 (1 * @dp) (1.5 * @dp) rgba(0, 0, 0, 0.3);
 }
 
@@ -685,15 +685,15 @@
 	&:focus, &[data-focused] {
 		outline: none;
 		background: #fff;
-		color: #00a4dc;
+		color: #E71414;
 	}
 
 	&:focus input, &[data-focused] input {
-		color: #00a4dc;
+		color: #E71414;
 	}
 
 	&:focus input::placeholder, &[data-focused] input::placeholder {
-		color: rgba(0, 164, 220, 0.55);
+		color: rgba(231, 20, 20, 0.55);
 	}
 }
 
@@ -714,7 +714,7 @@
 
 	.searchInput:focus ~ &,
 	.searchInput[data-focused] ~ & {
-		color: #00a4dc;
+		color: #E71414;
 	}
 }
 
@@ -857,7 +857,7 @@
 	&:focus, &[data-focused] {
 		outline: none;
 		background: #fff;
-		color: #00a4dc;
+		color: #E71414;
 	}
 
 	input::placeholder {
@@ -926,7 +926,7 @@
 	height: (40 * @dp);
 	border: 1px solid transparent;
 	background: transparent;
-	color: #00a4dc;
+	color: #E71414;
 	font-family: inherit;
 	font-size: (14 * @dp);
 	font-weight: 500;
@@ -978,14 +978,14 @@ position: relative;
 &:focus {
 outline: none;
 background: var(--theme-surface-variant, #1e1e1e);
-border-color: var(--theme-focus-border-color, #00a4dc);
+border-color: var(--theme-focus-border-color, #E71414);
 transform: scale(1.02);
 will-change: transform;
 }
 }
 
 .themeCardSelected {
-border-color: var(--theme-focus-border-color, #00a4dc);
+border-color: var(--theme-focus-border-color, #E71414);
 }
 
 .themeCardHeader {
@@ -1004,7 +1004,7 @@ color: var(--theme-text-primary, #fff);
 .themeCardCheck {
 font-size: 18px;
 font-weight: 700;
-color: var(--theme-accent, #00a4dc);
+color: var(--theme-accent, #E71414);
 }
 
 .themeCardDescription {
@@ -1016,7 +1016,7 @@ margin-bottom: 12px;
 .themeStoreCardAction {
 font-size: 14px;
 font-weight: 600;
-color: var(--theme-accent, #00a4dc);
+color: var(--theme-accent, #E71414);
 }
 
 .themeStoreMessage {
@@ -1052,8 +1052,8 @@ transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 
 &:focus {
 outline: none;
-background: var(--accent-color, #00a4dc);
-border-color: var(--accent-color, #00a4dc);
+background: var(--accent-color, #E71414);
+border-color: var(--accent-color, #E71414);
 color: var(--theme-on-accent, #fff);
 transform: scale(1.05);
 will-change: transform;
@@ -1188,7 +1188,7 @@ overflow: hidden;
 
 .playbackTimeBarFill {
 height: 100%;
-background: var(--theme-focus-border-color, #00a4dc);
+background: var(--theme-focus-border-color, #E71414);
 }
 
 .themeCardList { .flex-col-gap(4px); }
@@ -1243,14 +1243,14 @@ background: var(--theme-focus-border-color, #00a4dc);
 	&:focus {
 		outline: none;
 		background: #fff;
-		border-color: rgba(0, 164, 220, 0.72);
-		box-shadow: 0 0 (17.2 * @dp) (0.5 * @dp) rgba(0, 164, 220, 0.22);
+		border-color: rgba(231, 20, 20, 0.72);
+		box-shadow: 0 0 (17.2 * @dp) (0.5 * @dp) rgba(231, 20, 20, 0.22);
 	}
 }
 
 .syncCardSelected {
-	border: (2 * @dp) solid var(--theme-accent, #00a4dc);
-	background: rgba(0, 164, 220, 0.14);
+	border: (2 * @dp) solid var(--theme-accent, #E71414);
+	background: rgba(231, 20, 20, 0.14);
 }
 
 .syncText {
@@ -1283,8 +1283,8 @@ background: var(--theme-focus-border-color, #00a4dc);
 	}
 
 	.syncCard:focus & .listItemIcon {
-		border-color: rgba(0, 164, 220, 0.64);
-		background: rgba(0, 164, 220, 0.22);
+		border-color: rgba(231, 20, 20, 0.64);
+		background: rgba(231, 20, 20, 0.22);
 		color: rgba(0, 0, 0, @soft-ink);
 	}
 }
@@ -1410,7 +1410,7 @@ background: var(--theme-focus-border-color, #00a4dc);
 }
 
 .syncProfileIconActive {
-	color: var(--theme-accent, #00a4dc);
+	color: var(--theme-accent, #E71414);
 }
 
 .syncProfileTitle,
@@ -1452,7 +1452,7 @@ background: var(--theme-focus-border-color, #00a4dc);
 	display: flex;
 	flex-shrink: 0;
 	margin-right: (10 * @dp);
-	color: var(--theme-accent, #00a4dc);
+	color: var(--theme-accent, #E71414);
 
 	svg {
 		width: (24 * @dp);
@@ -1520,8 +1520,8 @@ cursor: pointer;
 
 &:focus {
 outline: none;
-background: var(--accent-color, #00a4dc);
-border-color: var(--accent-color, #00a4dc);
+background: var(--accent-color, #E71414);
+border-color: var(--accent-color, #E71414);
 color: var(--theme-on-accent, #fff);
 }
 }
@@ -1530,7 +1530,7 @@ color: var(--theme-on-accent, #fff);
    solid chip and the two states never read as each other. */
 .logFilterOn {
 color: var(--theme-text-primary, #fff);
-border-color: var(--accent-color, #00a4dc);
+border-color: var(--accent-color, #E71414);
 }
 
 .logList {

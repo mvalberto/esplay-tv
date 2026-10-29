@@ -17,7 +17,7 @@ describe('overlay colors', () => {
 
 	it('carries the hex this app used to save onto its key', () => {
 		expect(normalizeOverlayColorKey('#6a0dad')).toBe('purple');
-		expect(normalizeOverlayColorKey('#00a4dc')).toBe('moonfinCyan');
+		expect(normalizeOverlayColorKey('#e71414')).toBe('moonfinCyan');
 		expect(normalizeOverlayColorKey('#003366')).toBe('dark_blue');
 	});
 

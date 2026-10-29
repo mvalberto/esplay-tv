@@ -13,7 +13,7 @@ const SpottableDiv = Spottable('div');
 const MarqueeGroup = MarqueeController('div');
 
 // The accent color a program without a genre borrows.
-const ACCENT = {color: '#00a4dc', rgb: '0, 164, 220'};
+const ACCENT = {color: '#E71414', rgb: '231, 20, 20'};
 
 // Every horizontal padding a cell's text sits inside: the cell gap, the text inset, and the
 // right hand inset.

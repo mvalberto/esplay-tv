@@ -454,8 +454,8 @@ export const getOptions = () => {
 
 // EmulatorJS's own button-mapping screen, driven by the remote. It reaches into EmulatorJS
 // internals, so every entry point checks the pieces it needs and does nothing when they're missing.
-const CONTROL_HIGHLIGHT = '3px solid #00a4dc';
-const INPUT_HIGHLIGHT = '2px solid #00a4dc';
+const CONTROL_HIGHLIGHT = '3px solid #E71414';
+const INPUT_HIGHLIGHT = '2px solid #E71414';
 const AREA_ROW = 'row';
 const AREA_TAB = 'tab';
 const AREA_GAMEPAD = 'gamepad';

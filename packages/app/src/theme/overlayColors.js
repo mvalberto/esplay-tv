@@ -16,7 +16,7 @@ const OVERLAY_COLORS = {
 	dark_green: '#0B4F0F',
 	slate: '#475569',
 	indigo: '#1E3A8A',
-	moonfinCyan: '#00A4DC',
+	moonfinCyan: '#E71414',
 	neonPulseMagenta: '#FF2E92'
 };
 
@@ -40,7 +40,7 @@ const ALIASES = {
 	'#006400': 'dark_green',
 	'#708090': 'slate',
 	'#4b0082': 'indigo',
-	'#00a4dc': 'moonfinCyan',
+	'#e71414': 'moonfinCyan',
 	'#ff2e92': 'neonPulseMagenta'
 };
 

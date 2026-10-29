@@ -1,6 +1,6 @@
 @import '../../styles/mixins.less';
 
-@accent: var(--theme-accent, #00a4dc);
+@accent: var(--theme-accent, #E71414);
 
 .overlay {
 	position: fixed;
@@ -65,7 +65,7 @@
 	font-size: 20px;
 	font-weight: 700;
 	letter-spacing: 0.04em;
-	background: rgba(var(--theme-accent-rgb, 0, 164, 220), 0.2);
+	background: rgba(var(--theme-accent-rgb, 231, 20, 20), 0.2);
 	color: var(--theme-on-surface, #fff);
 }
 
@@ -131,7 +131,7 @@
 .card:focus .cardPosterWrap,
 .cardActive .cardPosterWrap {
 	border-color: var(--theme-focus-border-color, @accent);
-	box-shadow: var(--theme-focus-glow, 0 0 0 3px rgba(var(--theme-accent-rgb, 0, 164, 220), 0.3));
+	box-shadow: var(--theme-focus-glow, 0 0 0 3px rgba(var(--theme-accent-rgb, 231, 20, 20), 0.3));
 }
 
 .infoPanel {
@@ -223,13 +223,13 @@
 }
 
 .actionPrimary {
-	background: rgba(var(--theme-accent-rgb, 0, 164, 220), 0.28);
+	background: rgba(var(--theme-accent-rgb, 231, 20, 20), 0.28);
 }
 
 .actionBtn:focus {
 	border-color: var(--theme-focus-border-color, @accent);
-	box-shadow: var(--theme-focus-glow, 0 0 0 2px rgba(var(--theme-accent-rgb, 0, 164, 220), 0.3));
-	background: var(--theme-button-focused, rgba(var(--theme-accent-rgb, 0, 164, 220), 0.35));
+	box-shadow: var(--theme-focus-glow, 0 0 0 2px rgba(var(--theme-accent-rgb, 231, 20, 20), 0.3));
+	background: var(--theme-button-focused, rgba(var(--theme-accent-rgb, 231, 20, 20), 0.35));
 	color: var(--theme-on-button-focused, #fff);
 }
 
@@ -245,7 +245,7 @@
 	padding: 10px 16px;
 	border-radius: 12px;
 	border: 2px solid transparent;
-	background: rgba(var(--theme-accent-rgb, 0, 164, 220), 0.22);
+	background: rgba(var(--theme-accent-rgb, 231, 20, 20), 0.22);
 	color: var(--theme-on-surface, #fff);
 	font-size: 20px;
 	font-weight: 700;
@@ -254,7 +254,7 @@
 
 .retryBtn:focus {
 	border-color: var(--theme-focus-border-color, @accent);
-	background: var(--theme-button-focused, rgba(var(--theme-accent-rgb, 0, 164, 220), 0.35));
+	background: var(--theme-button-focused, rgba(var(--theme-accent-rgb, 231, 20, 20), 0.35));
 	color: var(--theme-on-button-focused, #fff);
 }
 
@@ -335,7 +335,7 @@
 
 .pickerItem:focus,
 .pickerCancel:focus {
-	background: var(--theme-button-focused, rgba(var(--theme-accent-rgb, 0, 164, 220), 0.35));
+	background: var(--theme-button-focused, rgba(var(--theme-accent-rgb, 231, 20, 20), 0.35));
 	color: var(--theme-on-button-focused, #fff);
 }
 

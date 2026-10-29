@@ -10,7 +10,6 @@ import {
 	getAgeRatingOptions,
 	getAudioLanguageOptions,
 	getAutoLoginOptions,
-	getBitrateOptions,
 	getBlurOptions,
 	getContentTypeOptions,
 	getDetailScreenStyleOptions,
@@ -34,7 +33,6 @@ import {
 	getLoadingAnimationPositionOptions,
 	getLoadingAnimationSpeedOptions,
 	getMaxAudioChannelsOptions,
-	getMaxResolutionOptions,
 	getMediaSegmentActionOptions,
 	getMediaSegmentAutoHideOptions,
 	getNavPositionOptions,
@@ -841,12 +839,8 @@ export const SETTINGS_SCHEMA = [
 				description: () => $L('Bitrate, resolution, transcoding, and codec support'),
 				rows: [
 					{kind: KIND.SECTION, id: 'streaming', label: () => $L('Streaming')},
-					{kind: KIND.OPTION, key: 'maxBitrate', label: () => $L('Max Streaming Bitrate'), desc: () => $L('Cap the streaming bitrate. Content above this threshold will be transcoded to fit.'), options: getBitrateOptions, fallback: () => $L('Auto (Recommended)'), icon: 'network_check', padded: true},
-					{kind: KIND.OPTION, key: 'maxVideoResolution', label: () => $L('Max Resolution'), desc: () => $L('Limit the maximum resolution the player will request. Higher-resolution content will be transcoded down.'), options: getMaxResolutionOptions, fallback: () => $L('Auto'), icon: 'high_quality'},
 					{kind: KIND.TOGGLE, key: 'liveTvSkipGuide', label: () => $L('Skip TV Guide'), desc: () => $L('Open the first available live channel directly from library selection'), icon: 'live_tv'},
 					{kind: KIND.SECTION, id: 'decodingRendering', label: () => $L('Decoding & Rendering')},
-					{kind: KIND.TOGGLE, key: 'preferTranscode', label: () => $L('Prefer Transcoding'), desc: () => $L('Request transcoded streams when available'), icon: 'transform'},
-					{kind: KIND.TOGGLE, key: 'forceDirectPlay', label: () => $L('Force Direct Play'), desc: () => $L('Skip codec checks and always attempt DirectPlay (debug)'), icon: 'play_arrow'},
 					{kind: KIND.TOGGLE, key: 'xboxNativePlayer', label: () => $L('Console Video Player'), desc: () => $L("Play video through the console's own player for HEVC, 4K and HDR. Turn off to use the built-in web player. Takes effect on the next playback"), icon: 'play_circle', when: (ctx) => ctx.isXbox},
 					{kind: KIND.SLIDER, key: 'videoStartDelay', label: () => $L('Video Start Delay'), min: 0, max: 5, step: 0.5, format: (v) => (v === 0 ? $L('Off') : `${Number(v).toFixed(1)}s`), icon: 'schedule'}
 				]

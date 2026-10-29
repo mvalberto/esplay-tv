@@ -55,7 +55,7 @@ const OVERVIEW_LINE_HEIGHT = 26 * 1.25;
 
 const SURFACE = [26, 26, 26];
 const SURFACE_VARIANT = [37, 37, 37];
-const ACCENT = '#00a4dc';
+const ACCENT = '#E71414';
 
 const parseRgb = (rgb) => rgb.split(',').map((part) => parseInt(part, 10));
 

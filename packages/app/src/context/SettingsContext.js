@@ -1190,9 +1190,19 @@ export function SettingsProvider({children}) {
 		}
 	}, [syncFromServer, updateSetting]);
 
+	// EsPlay always plays at full quality, whatever is stored or synced, so the
+	// server never transcodes for a bitrate or resolution cap.
+	const esplaySettings = useMemo(() => ({
+		...settings,
+		maxBitrate: 200000000,
+		maxVideoResolution: 'auto',
+		preferTranscode: false,
+		forceDirectPlay: false
+	}), [settings]);
+
 	return (
 		<SettingsContext.Provider value={{
-			settings,
+			settings: esplaySettings,
 			loaded,
 			initialSyncSettled,
 			availableThemes,
