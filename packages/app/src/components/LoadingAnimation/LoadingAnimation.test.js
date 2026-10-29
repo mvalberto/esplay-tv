@@ -82,7 +82,7 @@ describe('loading overlay', () => {
 			mockSettings.loadingAnimationImage = image;
 			const {unmount} = render(<LoadingOverlay />);
 			const found = {
-				logo: count('.logoSpin svg'),
+				logo: count('.logoSpin img'),
 				spinner: count('.spinner canvas'),
 				moon: count('.moon canvas'),
 				canvases: count('canvas')

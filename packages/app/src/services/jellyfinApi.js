@@ -13,10 +13,10 @@ import {isPlexServer, registerPlexServer} from '../utils/plexUrls';
 const APP_VERSION = packageJson.version;
 
 const PLATFORM_IDENTITY = {
-	tizen: {appName: 'Moonfin for Tizen', deviceName: 'Samsung Smart TV', tag: 'tizen'},
-	vega: {appName: 'Moonfin for Fire TV', deviceName: 'Fire TV', tag: 'vega'},
-	webos: {appName: 'Moonfin for webOS', deviceName: 'LG Smart TV', tag: 'webos'},
-	xbox: {appName: 'Moonfin for Xbox', deviceName: 'Xbox', tag: 'xbox'}
+	tizen: {appName: 'EsPlay for Samsung TV', deviceName: 'Samsung Smart TV', tag: 'tizen'},
+	vega: {appName: 'EsPlay for Fire TV', deviceName: 'Fire TV', tag: 'vega'},
+	webos: {appName: 'EsPlay for LG TV', deviceName: 'LG Smart TV', tag: 'webos'},
+	xbox: {appName: 'EsPlay for Xbox', deviceName: 'Xbox', tag: 'xbox'}
 };
 const {appName: APP_NAME, deviceName: DEVICE_NAME, tag: platformTag} = PLATFORM_IDENTITY[getPlatform()] || PLATFORM_IDENTITY.webos;
 

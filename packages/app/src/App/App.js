@@ -328,9 +328,8 @@ const AppContent = (props) => {
 	const [reading, setReading] = useState(null);
 	const BookReader = reading ? BOOK_READERS[reading.reader.kind] : null;
 	const [unreadableBook, setUnreadableBook] = useState(null);
-	const {updateInfo, formattedNotes, dismiss: dismissUpdate} = useVersionCheck(
-		isAuthenticated && settings.updateNotificationsEnabled !== false ? 3000 : null
-	);
+	// EsPlay does not check Moonfin's GitHub releases for updates
+	const {updateInfo, formattedNotes, dismiss: dismissUpdate} = useVersionCheck(null);
 	const {userId, record: signInPin, account: pinAccount, latest: latestSignInPin, save: saveSignInPin} = useSignInPin();
 	const pinSession = isAuthenticated && userId ? `${userId}:${pinCheckCount}` : null;
 	const pinPending = Boolean(pinSession) && pinPassed !== pinSession;
@@ -2193,14 +2192,14 @@ const AppContent = (props) => {
 	);
 };
 
-let storedLocale = 'en-US';
+let storedLocale = 'es';
 try {
 	const bootLocale = localStorage.getItem('moonfin_uiLanguage');
 	if (bootLocale) {
 		storedLocale = bootLocale;
 	} else {
 		const stored = JSON.parse(localStorage.getItem('moonfin_settings') || '{}');
-		storedLocale = stored.uiLanguage || 'en-US';
+		storedLocale = stored.uiLanguage || 'es';
 	}
 } catch (e) { /* use default */ }
 

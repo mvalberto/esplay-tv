@@ -388,24 +388,12 @@ export const SETTINGS_SCHEMA = [
 						action: (ctx) => ctx.actions.openThemes()
 					},
 					{kind: KIND.OPTION, key: 'focusBorderColor', label: () => $L('Focus Border Color'), options: getAccentColorOptions, fallback: () => $L('Theme Default'), icon: 'border_color'},
-					{
-						kind: KIND.NAV,
-						id: 'themeStore',
-						icon: 'storefront_outlined',
-						label: () => $L('Theme Store'),
-						desc: () => $L('Browse and save community themes'),
-						action: (ctx) => ctx.actions.openThemeStore()
-					},
 					{kind: KIND.SECTION, id: 'display', label: () => $L('Display')},
 					{kind: KIND.TOGGLE, key: 'cardFocusZoom', label: () => $L('Focus Expansion Animation'), desc: () => $L('Scale focused or hovered cards and tiles'), icon: 'zoom_in'},
 					{kind: KIND.OPTION, key: 'uiScale', label: () => $L('UI Scaling'), options: getUiScaleOptions, fallback: () => $L('Default'), icon: 'zoom_out_map'},
 					{kind: KIND.OPTION, key: 'oledMode', label: () => $L('OLED Mode'), desc: () => $L('Deepen blacks and enrich artwork. Best on OLED displays.'), options: getOledModeOptions, fallback: () => $L('Off'), icon: 'contrast'},
 					{kind: KIND.OPTION, key: 'backdropBlurHome', label: () => $L('Browsing Background Blur'), options: getBlurOptions, fallback: () => $L('Medium'), icon: 'blur_circular'},
-					{kind: KIND.OPTION, key: 'watchedIndicatorBehavior', label: () => $L('Watched Indicators'), options: getWatchedIndicatorOptions, fallback: () => $L('Always'), icon: 'check_circle'},
-					{kind: KIND.SECTION, id: 'extras', label: () => $L('Extras')},
-					{kind: KIND.NAV, id: 'seasonalEffects', label: () => $L('Seasonal Effects'), desc: () => $L('Visual effects and seasonal decorations'), icon: 'auto_awesome', action: (ctx) => ctx.actions.openScreen('appearance', 'seasonalEffects', 'setting-seasonalEffects')},
-					{kind: KIND.NAV, id: 'loadingAnimation', label: () => $L('Loading Animation'), desc: () => $L('Customize the loading animations used throughout Moonfin'), icon: 'motion_photos_on_outlined', action: (ctx) => ctx.actions.openScreen('appearance', 'loadingAnimation', 'setting-loadingAnimation')},
-					{kind: KIND.NAV, id: 'screensaver', label: () => $L('Screensaver'), desc: () => $L('Enable the built-in screensaver'), icon: 'wallpaper', action: (ctx) => ctx.actions.openScreen('appearance', 'screensaver', 'setting-screensaver')}
+					{kind: KIND.OPTION, key: 'watchedIndicatorBehavior', label: () => $L('Watched Indicators'), options: getWatchedIndicatorOptions, fallback: () => $L('Always'), icon: 'check_circle'}
 				]
 			},
 			{
@@ -1137,17 +1125,11 @@ export const SETTINGS_SCHEMA = [
 						label: () => $L('Platform'),
 						value: (ctx) => (ctx.capabilities?.tizenVersionDisplay ? 'Tizen' : ctx.capabilities?.webosVersionDisplay ? 'webOS' : ctx.capabilities?.vegaVersionDisplay ? 'Fire TV' : ctx.capabilities?.xboxVersionDisplay ? 'Xbox' : $L('Unknown'))
 					},
-					{kind: KIND.TOGGLE, key: 'updateNotificationsEnabled', label: () => $L('Update Notifications'), desc: () => $L('Show app update notifications when a new release is available'), icon: 'system_update_alt'},
-					{kind: KIND.CUSTOM, id: 'checkForUpdates', render: 'checkForUpdates'},
-					{kind: KIND.NAV, id: 'sourceCode', label: () => $L('Source Code'), desc: () => 'github.com/Moonfin-Client/Smart-TV', icon: 'code', action: (ctx) => ctx.actions.openQrLink($L('Source Code'), 'https://github.com/Moonfin-Client/Smart-TV', 'setting-sourceCode')},
-					{kind: KIND.NAV, id: 'reportIssue', label: () => $L('Report an Issue'), desc: () => $L('Open the issue tracker on GitHub'), icon: 'bug_report', action: (ctx) => ctx.actions.openQrLink($L('Report an Issue'), 'https://github.com/Moonfin-Client/Smart-TV/issues', 'setting-reportIssue')},
+					{kind: KIND.NAV, id: 'sourceCode', label: () => $L('Based on Moonfin'), desc: () => 'github.com/Moonfin-Client/Smart-TV', icon: 'code', action: (ctx) => ctx.actions.openQrLink($L('Based on Moonfin'), 'https://github.com/Moonfin-Client/Smart-TV', 'setting-sourceCode')},
 					{kind: KIND.NAV, id: 'diagnosticsLogging', label: () => $L('Diagnostics & Logging'), desc: () => $L('Capture media, login and network logs and send them to the server as a report'), icon: 'troubleshoot', action: (ctx) => ctx.actions.openScreen('about', 'diagnostics', 'setting-diagnosticsLogging')},
 					{kind: KIND.NAV, id: 'runSetupAgain', label: () => $L('Run setup again'), icon: 'auto_awesome', when: (ctx) => !!ctx.actions.runSetupAgain, action: (ctx) => ctx.actions.runSetupAgain()},
-					{kind: KIND.NAV, id: 'joinDiscord', label: () => $L('Join Discord'), desc: () => $L('Chat with the community'), icon: 'forum', action: (ctx) => ctx.actions.openQrLink($L('Join Discord'), 'https://discord.gg/moonfin', 'setting-joinDiscord')},
-					{kind: KIND.NAV, id: 'supportMoonfin', label: () => $L('Support Moonfin'), desc: () => $L('Donate a coffee to the developer'), icon: 'favorite', action: (ctx) => ctx.actions.openQrLink($L('Support Moonfin'), 'https://buymeacoffee.com/moonfin', 'setting-supportMoonfin')},
 					{kind: KIND.SECTION, id: 'legal', label: () => $L('LEGAL')},
 					{kind: KIND.NAV, id: 'licenses', label: () => $L('Licenses'), desc: () => $L('Open-source license notices'), icon: 'description', action: (ctx) => ctx.actions.openQrLink($L('Licenses'), 'https://github.com/Moonfin-Client/Smart-TV/blob/main/LICENSE', 'setting-licenses')},
-					{kind: KIND.NAV, id: 'privacyPolicy', label: () => $L('Privacy Policy'), desc: () => $L('How Moonfin handles your data'), icon: 'privacy_tip', action: (ctx) => ctx.actions.openQrLink($L('Privacy Policy'), 'https://moonfin.io/privacy', 'setting-privacyPolicy')},
 					{kind: KIND.SECTION, id: 'server', label: () => $L('Server')},
 					{kind: KIND.INFO, id: 'serverUrl', label: () => $L('Server URL'), value: (ctx) => ctx.serverUrl || $L('Not connected'), icon: 'dns'},
 					{kind: KIND.INFO, id: 'serverVersion', label: () => $L('Server Version'), value: (ctx) => ctx.serverVersion || $L('Loading...'), icon: 'dns'},

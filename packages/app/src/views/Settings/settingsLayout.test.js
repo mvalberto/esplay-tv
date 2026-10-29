@@ -20,7 +20,7 @@ const SECTIONS = {
 	'account.account': ['signIn', 'family', 'servers', 'sync'],
 	'account.pinCode': ['pinGeneral', 'pinManage'],
 	'general.general': ['language', 'clock', 'input', 'behavior', 'performance'],
-	'appearance.appearance': ['navigation', 'layout', 'theme', 'display', 'extras'],
+	'appearance.appearance': ['navigation', 'layout', 'theme', 'display'],
 	'appearance.navigationBar': ['navAppearance', 'navButtons'],
 	'appearance.homeScreen': ['contents', 'looks', 'homeRowsRatings', 'externalSources'],
 	'appearance.rowOptions': ['continueWatchingAndNextUp', 'recentlyAdded', 'audio', 'collections', 'favorites', 'genres', 'playlists', 'rewatch', 'sinceYouWatched', 'studios'],
@@ -81,7 +81,8 @@ describe('settings layout', () => {
 		SETTINGS_SCHEMA.forEach((category) => category.subcategories.forEach((sub) => {
 			if (sub.menu === false && !reached.has(`${category.id}.${sub.id}`)) unreachable.push(`${category.id}.${sub.id}`);
 		}));
-		expect(unreachable).toEqual([]);
+		// EsPlay hides the Extras screens from the menu, they stay reachable through settings search
+		expect(unreachable).toEqual(['appearance.seasonalEffects', 'appearance.loadingAnimation', 'appearance.screensaver']);
 	});
 
 	test('a nested screen names a parent that sits in the same root', () => {

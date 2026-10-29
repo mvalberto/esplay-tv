@@ -15,7 +15,7 @@
  * Environment overrides (all optional, for installs in unusual places):
  *   TIZEN_CLI              - Full path to tizen / tizen.bat
  *   TIZEN_STUDIO_HOME      - Tizen tooling install root
- *   TIZEN_SIGN_PROFILE     - Signing profile name (default: Moonfin)
+ *   TIZEN_SIGN_PROFILE     - Signing profile name (default: EsPlay)
  *   TIZEN_CERT_DIR         - Folder holding author.p12 and distributor.p12
  *   TIZEN_PROFILES_XML     - Full path to profiles.xml
  */
@@ -55,7 +55,7 @@ const isWindows = process.platform === 'win32';
 const HOME_DIR = process.env.HOME || process.env.USERPROFILE || '';
 
 // Samsung certificate signing configuration
-const SAMSUNG_CERT_PROFILE = process.env.TIZEN_SIGN_PROFILE || 'Moonfin';
+const SAMSUNG_CERT_PROFILE = process.env.TIZEN_SIGN_PROFILE || 'EsPlay';
 const SAMSUNG_CERT_DIR = process.env.TIZEN_CERT_DIR ||
 	(HOME_DIR ? path.join(HOME_DIR, 'SamsungCertificate', SAMSUNG_CERT_PROFILE) : '');
 
@@ -621,7 +621,7 @@ async function main() {
 	const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
 	const version = pkg.version || '0.0.0';
 	const typeName = isLegacy ? 'Legacy' : isOblong ? 'Oblong' : 'Regular';
-	const wgtName = `Moonfin_Tizen_${typeName}_v${version}.wgt`;
+	const wgtName = `EsPlay_Tizen_${typeName}_v${version}.wgt`;
 	const finalWgt = path.join(REPO_ROOT, wgtName);
 
 	log('Cleaning up old output...');
@@ -685,8 +685,8 @@ async function main() {
 			process.exit(1);
 		}
 
-		// Find the generated wgt in repo root (exclude already-named Moonfin_Tizen_* files)
-		const wgtFiles = fs.readdirSync(REPO_ROOT).filter(f => f.endsWith('.wgt') && !/^Moonfin_Tizen_/.test(f));
+		// Find the generated wgt in repo root (exclude already-named EsPlay_Tizen_* files)
+		const wgtFiles = fs.readdirSync(REPO_ROOT).filter(f => f.endsWith('.wgt') && !/^EsPlay_Tizen_/.test(f));
 		if (wgtFiles.length === 0) {
 			error('No .wgt file generated!');
 			process.exit(1);
@@ -729,7 +729,7 @@ async function main() {
 		success('Installed to TV!');
 		
 		log('Launching app...');
-		run(`"${tizenCLI}" run -p MoonfinApp.moonfin`);
+		run(`"${tizenCLI}" run -p EsPlayTVes.EsPlay`);
 	}
 	
 	console.log('\n' + green('═'.repeat(50)));

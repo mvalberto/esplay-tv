@@ -9,6 +9,7 @@ import * as jellyfinApi from '../../services/jellyfinApi';
 import * as embyConnect from '../../services/embyConnect';
 import * as plexTv from '../../services/plexTv';
 import * as multiServerManager from '../../services/multiServerManager';
+import * as esplayPanel from '../../services/esplayPanel';
 import {discoverLocalServers} from '../../services/serverDiscovery';
 import {generateCandidates, normalizeServerBaseUrl, quickConnectApprovalUrl} from '../../utils/serverUrl';
 import {drawQrCode} from '../../utils/qrCanvas';
@@ -88,7 +89,8 @@ const Login = ({
 	const pendingServer = pendingServerInfo || pendingServerContext;
 	const alwaysAuthenticate = settings.alwaysAuthenticate === true;
 
-	const [step, setStep] = useState('servers');
+	// EsPlay opens on its own username and password screen, the server list stays as a fallback
+	const [step, setStep] = useState('esplay');
 	const [server, setServer] = useState(null);
 	const [users, setUsers] = useState([]);
 	const [discovered, setDiscovered] = useState([]);
@@ -97,7 +99,7 @@ const Login = ({
 	const [dialog, setDialog] = useState(null);
 	const [dialogError, setDialogError] = useState(null);
 	const [signInUser, setSignInUser] = useState(null);
-	const [username, setUsername] = useState('');
+	const [username, setUsername] = useState(esplayPanel.getLastUsername);
 	const [password, setPassword] = useState('');
 	const [showQuickConnect, setShowQuickConnect] = useState(false);
 	const [quickConnectCode, setQuickConnectCode] = useState(null);
@@ -432,6 +434,19 @@ const Login = ({
 		focusLater('add-server-btn');
 	}, [stopQuickConnect]);
 
+	const goToEsplay = useCallback(() => {
+		stopQuickConnect();
+		setStep('esplay');
+		setServer(null);
+		setUsers([]);
+		setSignInUser(null);
+		setUsername(esplayPanel.getLastUsername());
+		setPassword('');
+		setError(null);
+		setStatus(null);
+		focusLater('esplay-username-input');
+	}, [stopQuickConnect]);
+
 	// Connecting
 
 	const probeServer = useCallback(async (input) => {
@@ -543,7 +558,7 @@ const Login = ({
 		}
 
 		if (isAddingServer) {
-			focusLater('add-server-btn');
+			focusLater('esplay-username-input');
 			return;
 		}
 
@@ -565,7 +580,7 @@ const Login = ({
 			return;
 		}
 
-		focusLater('add-server-btn');
+		focusLater('esplay-username-input');
 	// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [isLoading]);
 
@@ -609,6 +624,63 @@ const Login = ({
 			setIsConnecting(false);
 		}
 	}, [server, login, isAdding, finishLogin]);
+
+	const esplaySignInTo = useCallback(async (address, name, secret) => {
+		const probe = await probeServer(address);
+		if (probe.error) return {error: probe.error};
+		try {
+			const result = await login(probe.server.url, name, secret, {
+				serverName: probe.server.name,
+				serverType: probe.server.serverType,
+				serverVersion: probe.server.version,
+				isAddingNewServer: isAdding,
+				switchToNewUser: true
+			});
+			return {result, url: probe.server.url};
+		} catch (err) {
+			return {error: getSignInMessage(err)};
+		}
+	}, [probeServer, login, isAdding]);
+
+	// The server that worked last time goes first, so a regular user still gets in while the panel is down.
+	const handleEsplaySignIn = useCallback(async () => {
+		const name = username.trim();
+		if (!name || isConnecting) return;
+		setIsConnecting(true);
+		setError(null);
+		setStatus($L('Signing in...'));
+
+		let outcome = null;
+		const cached = esplayPanel.getCachedServer(name);
+		if (cached) {
+			outcome = await esplaySignInTo(cached, name, password);
+			if (!outcome.result) esplayPanel.setCachedServer(name, null);
+		}
+		if (!outcome?.result) {
+			setStatus($L('Signing in...'));
+			const panel = await esplayPanel.panelLogin(name, password);
+			if (panel.error) {
+				outcome = {error: {
+					credentials: $L('Incorrect username or password.'),
+					attempts: $L('Too many attempts. Wait a few minutes and try again.'),
+					outdated: panel.message || $L('This version of the app is outdated. Please update it.')
+				}[panel.error] || $L('Could not reach EsPlay. Check your connection and try again.')};
+			} else {
+				outcome = await esplaySignInTo(panel.address, name, password);
+			}
+		}
+
+		setStatus(null);
+		setIsConnecting(false);
+		if (outcome.result) {
+			esplayPanel.setCachedServer(name, outcome.url);
+			esplayPanel.setLastUsername(name);
+			finishLogin(outcome.result);
+			return;
+		}
+		setError(outcome.error);
+		focusLater('esplay-password-input');
+	}, [username, password, isConnecting, esplaySignInTo, finishLogin]);
 
 	// A Plex Home member signs in with their own plex.tv token, from a switch that checks their PIN, and the server token
 	// plex.tv gives them.
@@ -927,8 +999,9 @@ const Login = ({
 	const openAddDialog = useCallback(() => {
 		setAddressValue('');
 		setDialogError(null);
-		setDialog({kind: 'add', step: 'choose'});
-		focusLater('add-choice-address');
+		// EsPlay only uses Emby by address, so Plex and Emby Connect are skipped
+		setDialog({kind: 'add', step: 'address'});
+		focusLater('add-address-input');
 	}, []);
 
 	const handleBack = useCallback(() => {
@@ -952,7 +1025,6 @@ const Login = ({
 		}
 		if (dialog) {
 			if (dialog.step === 'found') showAddressStep();
-			else if (dialog.step === 'address' && !isConnecting) openAddDialog();
 			else if (!isConnecting) closeDialog();
 			return true;
 		}
@@ -973,12 +1045,12 @@ const Login = ({
 				setStep('users');
 				focusLater('user-0');
 			} else {
-				goToServers();
+				goToEsplay();
 			}
 			return true;
 		}
-		if (step === 'users') {
-			goToServers();
+		if (step === 'users' || step === 'servers') {
+			goToEsplay();
 			return true;
 		}
 		if (isAdding) {
@@ -987,7 +1059,7 @@ const Login = ({
 			return true;
 		}
 		return false;
-	}, [dialog, closeDialog, showAddressStep, openAddDialog, isConnecting, step, users.length, isAdding, goToServers, stopQuickConnect, cancelAddServerFlow, onServerAdded, plexUsePassword, stopPlexPolling, requestPlexPin]);
+	}, [dialog, closeDialog, showAddressStep, isConnecting, step, users.length, isAdding, goToServers, goToEsplay, stopQuickConnect, cancelAddServerFlow, onServerAdded, plexUsePassword, stopPlexPolling, requestPlexPin]);
 
 	useEffect(() => {
 		if (!backHandlerRef) return undefined;
@@ -1110,6 +1182,14 @@ const Login = ({
 
 	const choosePlex = useCallback(() => startPlexSignIn(), [startPlexSignIn]);
 
+	const handleEsplayUsernameKeyDown = useCallback((e) => {
+		if (e.keyCode === KEYS.ENTER) focusLater('esplay-password-input');
+	}, []);
+
+	const handleEsplayPasswordKeyDown = useCallback((e) => {
+		if (e.keyCode === KEYS.ENTER) handleEsplaySignIn();
+	}, [handleEsplaySignIn]);
+
 	const handlePasswordKeyDown = useCallback((e) => {
 		if (e.keyCode === KEYS.ENTER) handleSignIn();
 	}, [handleSignIn]);
@@ -1151,6 +1231,75 @@ const Login = ({
 			</div>
 		);
 	}
+
+	const renderEsplay = () => (
+		<FocusArea className={`${css.card} ${css.cardCentered}`}>
+			<div className={css.signInMain}>
+				<h1 className={css.title}>{$L('Sign In')}</h1>
+				<p className={css.signInSubtitle}>{$L('Enter your EsPlay username and password')}</p>
+				<div className={css.formBlock}>
+					<div className={css.field}>
+						<SpottableInput
+							data-spotlight-id="esplay-username-input"
+							type="text"
+							purpose="username"
+							recents={usernameRecents}
+							className={css.input}
+							placeholder={$L('Username')}
+							value={username}
+							onChange={handleUsernameChange}
+							onKeyDown={handleEsplayUsernameKeyDown}
+							disabled={isConnecting}
+						/>
+					</div>
+					<div className={css.field}>
+						<SpottableInput
+							data-spotlight-id="esplay-password-input"
+							type="password"
+							purpose="password"
+							className={css.input}
+							placeholder={$L('Password')}
+							value={password}
+							onChange={handlePasswordChange}
+							onKeyDown={handleEsplayPasswordKeyDown}
+							disabled={isConnecting}
+						/>
+					</div>
+					{error && <div className={css.fieldError}>{error}</div>}
+					<div className={css.buttonWrap}>
+						{isAdding && (
+							<SpottableButton
+								data-spotlight-id="esplay-cancel-btn"
+								className={css.outlineButton}
+								onClick={handleBack}
+							>
+								{$L('Cancel')}
+							</SpottableButton>
+						)}
+						<SpottableButton
+							data-spotlight-id="esplay-signin-btn"
+							className={css.outlineButton}
+							onClick={handleEsplaySignIn}
+							disabled={isConnecting || !username.trim()}
+						>
+							{isConnecting ? $L('Signing in...') : $L('Sign In')}
+						</SpottableButton>
+					</div>
+					<div className={css.buttonWrap}>
+						<SpottableButton
+							data-spotlight-id="esplay-server-btn"
+							className={css.outlineButton}
+							onClick={goToServers}
+							disabled={isConnecting}
+						>
+							<MaterialIcon name="dns" className={css.outlineButtonIcon} />
+							{$L('Connect by entering the server')}
+						</SpottableButton>
+					</div>
+				</div>
+			</div>
+		</FocusArea>
+	);
 
 	const renderTile = ({key, spotlightId, serverType, name, detail, ...rest}) => (
 		<SpottableDiv
@@ -1289,7 +1438,7 @@ const Login = ({
 				<SpottableButton
 					data-spotlight-id="select-server-btn"
 					className={css.outlineButton}
-					onClick={goToServers}
+					onClick={goToEsplay}
 				>
 					<MaterialIcon name="home" className={css.outlineButtonIcon} />
 					{$L('Select Server')}
@@ -1711,12 +1860,12 @@ const Login = ({
 						{dialogError && <div className={css.fieldError}>{dialogError}</div>}
 						{status
 							? <div className={css.statusLine}>{status}</div>
-							: !dialogError && <div className={css.statusLine}>{$L('Works with Jellyfin, Emby and Plex.')}</div>}
+							: null}
 						<div className={css.dialogActions}>
 							<SpottableButton
 								data-spotlight-id="add-cancel-btn"
 								className={`${css.outlineButton} ${css.dialogButton}`}
-								onClick={openAddDialog}
+								onClick={closeDialog}
 								disabled={isConnecting}
 							>
 								{$L('Back')}
@@ -1767,7 +1916,7 @@ const Login = ({
 		return null;
 	};
 
-	const isNarrow = step === 'signin' || step === 'embyconnect' || step === 'plex';
+	const isNarrow = step === 'esplay' || step === 'signin' || step === 'embyconnect' || step === 'plex';
 	const isWide = (step === 'signin' && showQuickConnectQr) || Boolean(plexQrUrl);
 
 	return (
@@ -1777,13 +1926,14 @@ const Login = ({
 				<div className={css.logoSection}>
 					<img
 						src="resources/banner-dark.png"
-						alt="Moonfin"
+						alt="EsPlay"
 						className={`${css.logo} ${isNarrow ? css.logoSmall : ''}`}
 					/>
 				</div>
 
 				{status && !dialog && <div className={css.statusMessage}>{status}</div>}
 
+				{step === 'esplay' && renderEsplay()}
 				{step === 'servers' && renderServers()}
 				{step === 'users' && renderUsers()}
 				{step === 'signin' && renderSignIn()}
@@ -1792,9 +1942,9 @@ const Login = ({
 				{step === 'plex' && renderPlex()}
 				{step === 'plex-servers' && renderPlexServers()}
 
-				{step === 'servers' && (
+				{(step === 'esplay' || step === 'servers') && (
 					<div className={css.versionFooter}>
-						{$L('Moonfin version {version}').replace('{version}', process.env.REACT_APP_VERSION || '')}
+						{$L('Version {version}').replace('{version}', process.env.REACT_APP_VERSION || '')}
 					</div>
 				)}
 

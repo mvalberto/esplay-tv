@@ -9,7 +9,7 @@ export const defaultSettings = {
 	maxBitrate: 0,
 	audioLanguage: '',
 	subtitleLanguage: '',
-	uiLanguage: 'en-US',
+	uiLanguage: 'es',
 	subtitleMode: 'default',
 	subtitleSize: 'medium',
 	subtitlePosition: 'bottom',
