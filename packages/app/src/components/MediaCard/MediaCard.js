@@ -339,7 +339,15 @@ const MediaCard = ({item, serverUrl, cardType = 'portrait', rowImageType = 'post
 					</>
 				) : (
 					<div className={css.placeholder} style={imgSizeStyle}>
-						<div className={css.placeholderTitle}>{item.Name}</div>
+						{item.esplayTagId ? (
+							// EsPlay channel tag: its number big and red over the name.
+							<div className={css.esplayTag}>
+								{/^\d+\s/.test(item.Name || '') && <div className={css.esplayTagNumber}>{item.Name.split(/\s+/)[0]}</div>}
+								<div className={css.esplayTagLabel}>{(item.Name || '').replace(/^\d+\s+/, '')}</div>
+							</div>
+						) : (
+							<div className={css.placeholderTitle}>{item.Name}</div>
+						)}
 					</div>
 				)}
 

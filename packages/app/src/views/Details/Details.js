@@ -71,6 +71,7 @@ import PlaylistScreen from './PlaylistScreen';
 import AlbumScreen from './AlbumScreen';
 import ArtistScreen from './ArtistScreen';
 import AudioTrackScreen from './AudioTrackScreen';
+import {esplayGenres} from '../../esplay/genreMerge';
 
 import css from './Details.module.less';
 
@@ -1077,7 +1078,7 @@ const Details = ({itemId: itemIdProp, initialItem, onPlay, onSelectItem, onSelec
 	const currentAudioStream = audioStreams[selectedAudioIndex];
 	const currentSubtitleStream = selectedSubtitleIndex >= 0 ? subtitleStreams[selectedSubtitleIndex] : null;
 
-	const genres = item.Genres || [];
+	const genres = esplayGenres(item.Genres);
 	const tagline = showsSection('tagline') ? item.Taglines?.[0] : undefined;
 
 	const shownNextUp = showsSection('upNext') ? nextUp : [];

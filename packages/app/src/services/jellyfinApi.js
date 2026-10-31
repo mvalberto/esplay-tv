@@ -860,6 +860,31 @@ export const api = {
 	getLiveTvAiringPrograms: (limit) =>
 		request(`/LiveTv/Programs/Recommended?UserId=${currentUser}&IsAiring=true&Limit=${limit}`),
 
+	// EsPlay: Emby's channel tags, what airs now with each program's channel name and
+	// logo, a tag's channels with their current program, and one channel's schedule.
+	getLiveTvChannelTags: () =>
+		request(`/LiveTv/ChannelTags?UserId=${currentUser}`),
+
+	getLiveTvAiringWithChannels: (limit) =>
+		request(`/LiveTv/Programs/Recommended?UserId=${currentUser}&IsAiring=true&Limit=${limit}&Fields=ChannelInfo&EnableImages=true`),
+
+	getLiveTvChannelsWithTag: (tagId) =>
+		request(`/LiveTv/Channels?UserId=${currentUser}&TagIds=${encodeURIComponent(tagId)}&AddCurrentProgram=true&EnableUserData=true&Fields=ImageTags,UserData`),
+
+	getLiveTvChannelSchedule: (channelId, hours = 24) => {
+		const now = new Date();
+		const params = {
+			UserId: currentUser,
+			ChannelIds: channelId,
+			MinEndDate: now.toISOString(),
+			MaxStartDate: new Date(now.getTime() + hours * 3600000).toISOString(),
+			Fields: 'Overview,Genres,ProductionYear,OfficialRating,CommunityRating,EpisodeTitle',
+			EnableImages: true,
+			SortBy: 'StartDate'
+		};
+		return request(`/LiveTv/Programs?${buildQueryString(params)}`);
+	},
+
 	// The recordings screen asks for one category per call, mirroring moonfin-core's
 	// categorized rails. Without options this stays the plain full listing.
 	getLiveTvRecordings: (options = {}) => {

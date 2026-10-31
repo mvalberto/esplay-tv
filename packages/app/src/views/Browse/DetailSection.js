@@ -3,6 +3,7 @@ import {isMdblistEnabled} from '../../services/mdblistApi';
 import $L from '@enact/i18n/$L';
 import RatingsRow from '../../components/RatingsRow';
 import {formatDuration, getImageUrl, videoResolutionLabel} from '../../utils/helpers';
+import {esplayGenres} from '../../esplay/genreMerge';
 import css from './Browse.module.less';
 
 const FOCUS_ITEM_DEBOUNCE_MS = 400;
@@ -26,7 +27,7 @@ export const buildInfoParts = (item) => {
 	}
 	const resolution = videoResolutionLabel(item);
 	if (resolution) parts.push({chip: resolution});
-	const genres = (item.Genres || []).slice(0, DETAIL_GENRES_LIMIT);
+	const genres = esplayGenres(item.Genres).slice(0, DETAIL_GENRES_LIMIT);
 	if (genres.length) parts.push({text: genres.join(', ')});
 	return parts;
 };

@@ -38,6 +38,7 @@ import {rem} from '../../utils/rootScale';
 import {rowImageType, rowPeekHeight} from './rowPeek';
 
 import css from './Browse.module.less';
+import {setPendingLiveTv} from '../../esplay/liveTvIntent';
 
 const FOCUS_DELAY_MS = 100;
 const BACKDROP_SETTLE_MS = 250;
@@ -590,6 +591,7 @@ const Browse = ({
 		if (item.isRecordingsShortcut) {
 			onOpenRecordings?.();
 		} else if (item.isLibraryTile) {
+			if (item.esplayTagId) setPendingLiveTv({tagId: item.esplayTagId});
 			onSelectLibrary?.(item);
 		} else if (item.Type === 'Recording') {
 			onPlayRecording?.(item);

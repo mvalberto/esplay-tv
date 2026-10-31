@@ -89,7 +89,8 @@ const Player = lazy(() => import('../views/Player'));
 const Favorites = lazy(() => import('../views/Favorites'));
 const Genres = lazy(() => import('../views/Genres'));
 const GenreBrowse = lazy(() => import('../views/GenreBrowse'));
-const LiveTV = lazy(() => import('../views/LiveTV'));
+// EsPlay: live TV by Emby channel tags, with the guide as one of its tabs.
+const LiveTV = lazy(() => import('../views/EsplayLiveTV'));
 const Recordings = lazy(() => import('../views/Recordings'));
 const SeerrDiscover = lazy(() => import('../views/SeerrDiscover'));
 const SeerrRequests = lazy(() => import('../views/SeerrRequests'));
@@ -104,6 +105,7 @@ const SetupWizard = lazy(() => import('../views/SetupWizard'));
 
 import '../styles/perf-overrides.less';
 import css from './App.module.less';
+import {setPendingLiveTv} from '../esplay/liveTvIntent';
 
 const MAX_HISTORY_LENGTH = 10;
 const SpottableButton = Spottable('button');
@@ -783,6 +785,12 @@ const AppContent = (props) => {
 		}
 	}, [isLoading, isAuthenticated, authChecked]);
 
+	// EsPlay: the boot splash the TV build puts in index.html stays until the first screen is ready.
+	const appReady = !isLoading && authChecked && settingsLoaded;
+	useEffect(() => {
+		if (appReady && typeof window !== 'undefined' && window.esplayHideBootSplash) window.esplayHideBootSplash();
+	}, [appReady]);
+
 	const kidsBlockedPanels = useMemo(() => blockedPanels(PANELS), []);
 
 	const showPanel = useCallback((panel) => {
@@ -962,9 +970,10 @@ const AppContent = (props) => {
 
 	const handleSelectItem = useCallback((item, autoPlay = false) => {
 		setDetailsAutoPlay(Boolean(autoPlay) && item?.Type !== 'Audio' && !isLiveTvChannel(item));
-		// A channel has no details worth landing on, so it tunes straight away.
+		// EsPlay opens a channel on its own page with its schedule, as Emby does.
 		if (isLiveTvChannel(item)) {
-			handlePlayChannel(item);
+			setPendingLiveTv({channel: item});
+			navigateTo(PANELS.LIVETV);
 			return;
 		}
 		if (item.Type === 'Photo') {
@@ -992,7 +1001,7 @@ const AppContent = (props) => {
 			setSelectedItem(item);
 			navigateTo(PANELS.DETAILS);
 		}
-	}, [navigateTo, panelIndex, selectedItem, handlePlayChannel]);
+	}, [navigateTo, panelIndex, selectedItem]);
 
 	// A song or a channel plays as soon as it's picked, so only the rest wait for their screen to start them.
 	const handlePlayFromMenu = useCallback((item) => {
@@ -1304,7 +1313,7 @@ const AppContent = (props) => {
 			navigateTo(PANELS.GENRE_BROWSE);
 			return;
 		}
-		setGenreFilter(genre.name);
+		setGenreFilter(genre.esplayGenreNames || genre.name);
 		setStudioFilter(null);
 		if (library) {
 			setSelectedLibrary(library);

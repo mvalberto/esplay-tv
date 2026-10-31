@@ -39,6 +39,7 @@ import useItemMenuHold, {cardIndexOf} from '../../hooks/useItemMenuHold';
 import {FOCUS_SCALE, POSTER_HEIGHTS, POSTER_SIZE_OPTIONS, createGridKeyDown, createRowsLeftKeyDown, createToolbarKeyDown, focusOverhang, horizontalCellPad, libraryPosterSize, matchesStartLetter, stopPropagation} from '../../utils/gridChrome';
 import {ARROW_DOWN_ICON, ARROW_UP_ICON, CLEAR_FILTERS_ICON, EXPAND_LESS_ICON, EXPAND_MORE_ICON, GROUP_ICON, HOME_ICON, Icon, Letters, LibraryDock, LibraryTitle, ModernBar, ModernLetters, SEARCH_ICON, SETTINGS_ICON, SHUFFLE_ICON, SORT_ICON} from './LibraryHeaders';
 import LibrarySkeleton from './LibrarySkeleton';
+import {esplayGenreName} from '../../esplay/genreMerge';
 
 import css from './Library.module.less';
 
@@ -1567,7 +1568,7 @@ const Library = ({library, genreFilter, studioFilter, onSelectItem, onViewPhoto,
 	const onPlex = libraryServerType === 'plex';
 	const supported = (options) => options.filter(o => (!o.jellyfinOnly || libraryServerType !== 'emby') && !(onPlex && o.plexless));
 	const musicTitle = musicGridView ? MUSIC_TITLES[musicContentType]?.() : null;
-	const displayName = genreFilter || studioFilter || musicTitle || library?.Name || '';
+	const displayName = (genreFilter && esplayGenreName(genreFilter)) || studioFilter || musicTitle || library?.Name || '';
 	const titleProps = {isFolderView, folderStack, rootName: library?.Name, displayName, shownCount, onBreadcrumb: handleFolderBreadcrumb};
 	const genreLibraryName = genreLibraries.find((lib) => lib.Id === parentId)?.Name || null;
 	const groupTabBarTabs = useMemo(() => (

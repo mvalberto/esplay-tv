@@ -16,6 +16,7 @@ import {boxArtCell, boxArtNeedsFill, gameDisplayTitle, gameFallbackColor, median
 import {buildGameIndex, gameIndexMatches, gameQueryWords} from '../../utils/gameBrowse';
 import {LETTERS, createGridKeyDown, createToolbarKeyDown, focusOverhang, horizontalCellPad, pageGrid} from '../../utils/gridChrome';
 import {KEYS, pageDirection} from '../../utils/keys';
+import {matchRomoteGames, romoteImageUrl} from '../../esplay/romoteGames';
 
 import css from './GameSystem.module.less';
 
@@ -71,6 +72,7 @@ const GameSystem = ({library, system, onSelectGame, onBack, backHandlerRef}) => 
 	const [backdropUrl, setBackdropUrl] = useState('');
 	const [aspects, setAspects] = useState(null);
 	const [gridAspect, setGridAspect] = useState(null);
+	const [romote, setRomote] = useState({});
 	const {getScrollTo, scrollTo} = useQuickReturnGrid('game-grid');
 
 	const libraryId = library?.Id;
@@ -90,6 +92,9 @@ const GameSystem = ({library, system, onSelectGame, onBack, backHandlerRef}) => 
 				if (cancelled) return;
 				setGames(all || []);
 				setLoading(false);
+				matchRomoteGames(all).then((found) => {
+					if (!cancelled) setRomote(found);
+				});
 			})
 			.catch((e) => {
 				if (cancelled) return;
@@ -275,10 +280,11 @@ const GameSystem = ({library, system, onSelectGame, onBack, backHandlerRef}) => 
 		const entry = visibleRef.current[index];
 		if (!entry) return <div {...rest} className={css.itemCard} style={{padding: cellPadding}} />;
 
-		const artUrl = gamesApi.gameThumbUrl(libraryId, entry.game.id);
+		const romoteUrl = romoteImageUrl(romote[entry.game.id], 400);
+		const artUrl = romoteUrl || gamesApi.gameThumbUrl(libraryId, entry.game.id);
 		// Art shows whole when it's off the grid's shape, or the server sent no size for it.
 		const aspect = aspects?.get(entry.game.id);
-		const contain = gridAspect != null && aspects != null && (aspect == null || boxArtNeedsFill(aspect, cellAspect));
+		const contain = Boolean(romoteUrl) || gridAspect != null && aspects != null && (aspect == null || boxArtNeedsFill(aspect, cellAspect));
 		return (
 			<SpottableDiv
 				{...rest}
@@ -297,7 +303,7 @@ const GameSystem = ({library, system, onSelectGame, onBack, backHandlerRef}) => 
 				</div>
 			</SpottableDiv>
 		);
-	}, [libraryId, handleItemClick, cellPadding, coverHeight, aspects, gridAspect, cellAspect]);
+	}, [libraryId, handleItemClick, cellPadding, coverHeight, aspects, gridAspect, cellAspect, romote]);
 
 	const showDetails = settings?.showMediaDetailsOnLibraryPage !== false;
 	const focusedTitle = focusedGame ? gameDisplayTitle(focusedGame.title, focusedGame.fileName) : '';
@@ -365,8 +371,8 @@ const GameSystem = ({library, system, onSelectGame, onBack, backHandlerRef}) => 
 										</span>
 									))}
 								</div>
-								{activeDetail?.overview && (
-									<div className={css.focusedOverview}>{activeDetail.overview}</div>
+								{(activeDetail?.overview || romote[focusedGame.id]?.overview) && (
+									<div className={css.focusedOverview}>{activeDetail?.overview || romote[focusedGame.id].overview}</div>
 								)}
 							</>
 						)}

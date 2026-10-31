@@ -145,7 +145,8 @@ const stripItemForCache = (item) => ({
 	_serverUserId: item._serverUserId,
 	_serverId: item._serverId,
 	isLibraryTile: item.isLibraryTile,
-	isRecordingsShortcut: item.isRecordingsShortcut
+	isRecordingsShortcut: item.isRecordingsShortcut,
+	esplayTagId: item.esplayTagId
 });
 
 // Enough of the rows to tell whether a write is worth making. Resume and Next Up also fold in

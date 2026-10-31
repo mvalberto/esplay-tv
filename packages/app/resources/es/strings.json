@@ -444,7 +444,7 @@
     "Kids": "Infantiles",
     "Known for:": "Conocido por:",
     "Korean": "Coreano",
-    "LIVE": "EN VIVO",
+    "LIVE": "EN DIRECTO",
     "Large": "Grande",
     "Last Air Date": "Última emisión",
     "Last Played": "Jugado por última vez",
@@ -2820,5 +2820,17 @@
     "Hero-first, with pop-up cards for cast and extras.": "Primero la imagen principal, con tarjetas emergentes para reparto y extras.",
     "Full-screen, with sections stacked instead of tabs.": "Pantalla completa, con las secciones apiladas en lugar de pestañas.",
     "Step {n} of {total}": "Paso {n} de {total}",
-    "Up and down to preview · OK to choose · Back twice to skip": "Arriba y abajo para previsualizar · OK para elegir · Atrás dos veces para saltar"
+    "Up and down to preview · OK to choose · Back twice to skip": "Arriba y abajo para previsualizar · OK para elegir · Atrás dos veces para saltar",
+    "See channels": "Ver canales",
+    "No guide information": "Sin información de guía",
+    "On now": "En directo ahora",
+    "Create recording": "Crear grabación",
+    "Cancel recording": "Cancelar grabación",
+    "Recording scheduled": "Grabación programada",
+    "That did not work. Try again.": "No ha funcionado. Vuelve a intentarlo.",
+    "No upcoming programs for this channel.": "No hay programación próxima para este canal.",
+    "This tag has no channels.": "Esta etiqueta no tiene canales.",
+    "This server has no channel tags yet.": "Este servidor todavía no tiene etiquetas de canales.",
+    "OK cancels the recording": "OK cancela la grabación",
+    "OK records this program": "OK graba este programa"
 }

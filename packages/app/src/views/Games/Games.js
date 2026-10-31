@@ -8,6 +8,7 @@ import Scroller from '@enact/sandstone/Scroller';
 import GameSystemCard from '../../components/GameSystemCard';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import * as gamesApi from '../../services/gamesApi';
+import {matchRomoteGames, romoteImageUrl} from '../../esplay/romoteGames';
 
 import css from './Games.module.less';
 
@@ -27,6 +28,7 @@ const Games = ({library, onSelectSystem, onHome, backHandlerRef}) => {
 	const [systems, setSystems] = useState([]);
 	const [previews, setPreviews] = useState({});
 	const [counts, setCounts] = useState({});
+	const [romote, setRomote] = useState({});
 
 	const libraryId = library?.Id;
 
@@ -75,6 +77,9 @@ const Games = ({library, onSelectSystem, onHome, backHandlerRef}) => {
 				});
 				setPreviews(grouped);
 				setCounts(totals);
+				matchRomoteGames([].concat(...Object.values(grouped))).then((found) => {
+					if (!cancelled) setRomote(found);
+				});
 			})
 			.catch(() => {});
 		return () => { cancelled = true; };
@@ -93,7 +98,7 @@ const Games = ({library, onSelectSystem, onHome, backHandlerRef}) => {
 		}
 	}, [loading, systems.length]);
 
-	const thumbUrl = useCallback((gameId) => gamesApi.gameThumbUrl(libraryId, gameId), [libraryId]);
+	const thumbUrl = useCallback((gameId) => romoteImageUrl(romote[gameId], 300) || gamesApi.gameThumbUrl(libraryId, gameId), [libraryId, romote]);
 	const handleSelect = useCallback((system) => onSelectSystem && onSelectSystem(library, system), [onSelectSystem, library]);
 
 	// A system the server sent no games for has nothing to show.

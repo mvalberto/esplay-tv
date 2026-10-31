@@ -14,6 +14,7 @@ import useSortSettingsPanels from '../../hooks/useSortSettingsPanels';
 import useItemMenuHold, {cardIndexOf} from '../../hooks/useItemMenuHold';
 import {capitalize, createGridKeyDown, createToolbarKeyDown, cycleValue, stopPropagation} from '../../utils/gridChrome';
 import {PanelContainer} from '../../utils/spotlightContainers';
+import {mergeGenresBySpanishName} from '../../esplay/genreMerge';
 
 import css from './Genres.module.less';
 
@@ -134,13 +135,14 @@ const Genres = ({onSelectGenre, onHome, backHandlerRef}) => {
 					genreList = genresResult.Items || [];
 				}
 
+				genreList = mergeGenresBySpanishName(genreList);
 				const groupCollections = Boolean(settings.groupItemsIntoCollections);
 				const BATCH_SIZE = 10;
 				const usedBackdropIds = new Set();
 				const getGenreData = async (genre) => {
 					try {
 						const itemParams = {
-							Genres: genre.Name,
+							Genres: genre.EsPlayGenreNames || genre.Name,
 							IncludeItemTypes: groupCollections ? 'Movie,Series,BoxSet' : 'Movie,Series',
 							ExcludeItemTypes: 'Playlist,Episode,Season,Folder',
 							CollapseBoxSetItems: groupCollections,
@@ -195,6 +197,7 @@ const Genres = ({onSelectGenre, onHome, backHandlerRef}) => {
 						return {
 							id: genre.Id,
 							name: genre.Name,
+							esplayGenreNames: genre.EsPlayGenreNames,
 							itemCount,
 							backdropUrl,
 							_serverUrl: genre._serverUrl,

@@ -520,6 +520,9 @@ async function main() {
 </script>
 `;
 		html = html.replace(/<script defer="defer" src="main\.js"><\/script>/, preBootPatches + '<script defer="defer" src="main.js"></script>');
+		// EsPlay: the animated wordmark covers the black screen while main.js loads.
+		const bootSplash = fs.readFileSync(path.join(__dirname, 'esplay-boot-splash.html'), 'utf8');
+		html = html.replace('<div id="root"></div>', '<div id="root"></div>' + bootSplash);
 		fs.writeFileSync(indexPath, html);
 		success('Patched index.html (webapis + globalThis polyfill + XHR mock)');
 	}

@@ -466,12 +466,27 @@ const useBrowseData = ({
 
 					const liveTvLibrary = libs.find(lib => lib.CollectionType?.toLowerCase() === 'livetv');
 					if (liveTvLibrary) {
+						// EsPlay: the live TV page, then a tile per Emby channel tag that opens it
+						// on that tag. The guide and recordings are tabs on the live TV page.
+						const tagsResult = api.getLiveTvChannelTags
+							? await api.getLiveTvChannelTags().catch(() => null)
+							: null;
+						const tags = ((tagsResult && (tagsResult.Items || tagsResult)) || []).filter(t => t && t.Id);
 						rowData.push({
 							id: 'livetv',
 							title: $L('Live TV'),
 							items: [
-								{...liveTvLibrary, Name: $L('Guide'), Type: 'CollectionFolder', isLibraryTile: true},
-								{Id: 'livetv-recordings', Name: $L('Recordings'), Type: 'CollectionFolder', isRecordingsShortcut: true}
+								{...liveTvLibrary, Name: $L('Live TV'), Type: 'CollectionFolder', isLibraryTile: true},
+								...tags.map(tag => ({
+									...liveTvLibrary,
+									Id: 'esplay-tag-' + tag.Id,
+									Name: tag.Name,
+									Type: 'CollectionFolder',
+									ImageTags: {},
+									BackdropImageTags: [],
+									isLibraryTile: true,
+									esplayTagId: tag.Id
+								}))
 							],
 							type: 'landscape',
 							isLiveTvRow: true

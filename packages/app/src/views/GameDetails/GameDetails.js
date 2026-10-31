@@ -18,6 +18,7 @@ import {ModalContainer} from '../../utils/spotlightContainers';
 import {DETAIL_ICON_PATHS} from '../Details/detailIcons';
 import {coreChoices, coreLabel} from './coreChoices';
 import {scrimStyle} from '../../utils/scrimImage';
+import {matchRomoteGame, matchRomoteGames, romoteImageUrl} from '../../esplay/romoteGames';
 
 import css from './GameDetails.module.less';
 
@@ -76,6 +77,8 @@ const GameDetails = ({library, gameId, initialGame, onPlay, onSelectGame, backHa
 	const [unsupported, setUnsupported] = useState(null);
 	const [corePickerOpen, setCorePickerOpen] = useState(false);
 	const [toast, setToast] = useState(null);
+	const [romote, setRomote] = useState(null);
+	const [relatedRomote, setRelatedRomote] = useState({});
 	const currentGameId = useRef(gameId);
 	currentGameId.current = gameId;
 
@@ -104,15 +107,23 @@ const GameDetails = ({library, gameId, initialGame, onPlay, onSelectGame, backHa
 		// Drops a check still running for the previous game.
 		saveCheck.current++;
 		setSaveReadiness('checking');
+		setRomote(null);
 		gamesApi.getGame(libraryId, gameId).then((g) => {
 			if (cancelled) return;
 			setGame(g);
 			setLoading(false);
 			if (g) {
 				checkSave(g);
+				matchRomoteGame(g).then((found) => {
+					if (!cancelled) setRomote(found);
+				});
 				gamesApi.getGames(libraryId, g.system).then((all) => {
 					if (cancelled) return;
-					setRelated((all || []).filter((x) => x.id !== g.id).slice(0, 20));
+					const shown = (all || []).filter((x) => x.id !== g.id).slice(0, 20);
+					setRelated(shown);
+					matchRomoteGames(shown).then((found) => {
+						if (!cancelled) setRelatedRomote(found);
+					});
 				});
 				gamesApi.getBoxArtAspects(libraryId, g.system).then((found) => {
 					if (!cancelled) setRelatedAspects(found);
@@ -196,7 +207,9 @@ const GameDetails = ({library, gameId, initialGame, onPlay, onSelectGame, backHa
 	if (!game) return <div className={css.center}><div>{$L('Game not found.')}</div></div>;
 
 	const backdrop = gamesApi.gameThumbUrl(libraryId, game.id, 'snap');
-	const poster = gamesApi.gameThumbUrl(libraryId, game.id);
+	const romoteMatch = romote;
+	const poster = romoteImageUrl(romoteMatch, 500) || gamesApi.gameThumbUrl(libraryId, game.id);
+	const overview = game.overview || romoteMatch?.overview;
 	const title = gameHeadline(game.title, game.fileName);
 	const primary = primaryAction(saveReadiness);
 	const gameFacts = facts(game);
@@ -213,8 +226,8 @@ const GameDetails = ({library, gameId, initialGame, onPlay, onSelectGame, backHa
 				{poster ? <img className={css.poster} src={poster} alt="" onError={hideBrokenArt} /> : null}
 				<div className={css.kicker}>{game.system}</div>
 				<h1 className={css.title}>{title}</h1>
-				<div className={css.meta}>{metaLine(game)}</div>
-				{game.overview ? <div className={css.overview}>{game.overview}</div> : null}
+				<div className={css.meta}>{metaLine({...game, year: game.year || romoteMatch?.year, genre: game.genre || romoteMatch?.genres?.[0]})}</div>
+				{overview ? <div className={css.overview}>{overview}</div> : null}
 				<div className={css.actions}>
 					<Button
 						spotlightId="game-play-btn"
@@ -266,7 +279,7 @@ const GameDetails = ({library, gameId, initialGame, onPlay, onSelectGame, backHa
 					<div className={css.relatedTitle}>{$L('More in {system}').replace('{system}', game.system)}</div>
 					<div className={css.relatedRow}>
 						{related.map((g) => (
-							<GameCard key={g.id} game={g} artUrl={gamesApi.gameThumbUrl(libraryId, g.id)} aspect={relatedAspects?.get(g.id)} width={150} onSelect={openRelated} />
+							<GameCard key={g.id} game={g} artUrl={romoteImageUrl(relatedRomote[g.id], 300) || gamesApi.gameThumbUrl(libraryId, g.id)} aspect={relatedRomote[g.id] ? undefined : relatedAspects?.get(g.id)} width={150} onSelect={openRelated} />
 						))}
 					</div>
 				</div>
