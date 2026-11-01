@@ -7,7 +7,7 @@ import RatingsRow from '../../components/RatingsRow';
 import {formatDuration, getImageUrl} from '../../utils/helpers';
 import {castPhotoUrl, hidesMediaDescription, seriesThumbUrl} from './detailsMedia';
 import {splitAdditionalParts} from './extraCategories';
-import {isMdblistEnabled} from '../../services/mdblistApi';
+import {getIconUrl, isMdblistEnabled} from '../../services/mdblistApi';
 import {formatTime} from '../Player/PlayerConstants';
 import {SeerrStatusBadge, SeerrDownloadBars, SeerrSeasonDot} from '../../components/seerr/SeerrStatusBadge';
 import {SeerrChips, SeerrFacts, SeerrStreaming, SeerrCollectionBanner} from '../../components/seerr/SeerrSections';
@@ -402,7 +402,7 @@ const ClassicDetailScreen = ({
 										{epRuntime && <span className={css.episodeEpRuntime}>{epRuntime}</span>}
 										{episodeRatings[ep.IndexNumber] != null && (
 											<span className={css.tmdbBadge}>
-												<img className={css.tmdbIcon} src={`${serverUrl}/Moonfin/Assets/tmdb.svg`} alt="TMDB" />
+												<img className={css.tmdbIcon} src={getIconUrl(serverUrl, 'tmdb')} alt="TMDB" />
 												{episodeRatings[ep.IndexNumber].toFixed(1)}
 											</span>
 										)}

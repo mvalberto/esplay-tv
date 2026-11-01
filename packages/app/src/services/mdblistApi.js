@@ -1,4 +1,4 @@
-import {getAuthHeader, getServerUrl, api} from './jellyfinApi';
+import {getAuthHeader, getServerUrl, getApiKey, getTokenParam, api} from './jellyfinApi';
 import {mediaServerQueue} from '../utils/requestQueue';
 import {RATING_SETTING_KEYS, ratingKey} from '../utils/ratingSources';
 
@@ -32,23 +32,27 @@ export const getIconUrl = (baseUrl, source, rating) => {
 	const info = RATING_SOURCES[source];
 	if (!info) return '';
 
+	// EsPlay: Emby only serves Moonbase's icons to a signed-in client, and an <img> sends no
+	// auth header, so the token goes in the URL.
+	const asset = (file) => `${baseUrl}/Moonfin/Assets/${file}?${getTokenParam()}=${encodeURIComponent(getApiKey() || '')}`;
+
 	const score = rating?.score;
 
 	if (source === 'tomatoes' && score != null && score > 0) {
-		if (score >= 75) return `${baseUrl}/Moonfin/Assets/rt-certified.svg`;
-		if (score < 60) return `${baseUrl}/Moonfin/Assets/rt-rotten.svg`;
+		if (score >= 75) return asset('rt-certified.svg');
+		if (score < 60) return asset('rt-rotten.svg');
 	}
 
 	if (source === 'tomatoes_audience' && score != null && score > 0) {
-		if (score >= 90) return `${baseUrl}/Moonfin/Assets/rt-verified.svg`;
-		if (score < 60) return `${baseUrl}/Moonfin/Assets/rt-audience-down.svg`;
+		if (score >= 90) return asset('rt-verified.svg');
+		if (score < 60) return asset('rt-audience-down.svg');
 	}
 
 	if (source === 'metacritic' && score != null && score >= 81) {
-		return `${baseUrl}/Moonfin/Assets/metacritic-score.svg`;
+		return asset('metacritic-score.svg');
 	}
 
-	return `${baseUrl}/Moonfin/Assets/${info.iconFile}`;
+	return asset(info.iconFile);
 };
 
 /**

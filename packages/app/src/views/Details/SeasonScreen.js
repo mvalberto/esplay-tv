@@ -4,7 +4,7 @@ import $L from '@enact/i18n/$L';
 import RatingsRow from '../../components/RatingsRow';
 import {formatDuration, getImageUrl} from '../../utils/helpers';
 import {hidesMediaDescription} from './detailsMedia';
-import {isMdblistEnabled} from '../../services/mdblistApi';
+import {getIconUrl, isMdblistEnabled} from '../../services/mdblistApi';
 import {SpottableDiv} from './detailsSpottables';
 import {PosterBadges, WatchedCheckIcon, FavoriteHeartIcon} from './DetailBadges';
 import {AnimeEpisodePills} from '../../components/AnimeMarkerPills';
@@ -102,7 +102,7 @@ const SeasonScreen = ({
 									{epRuntime && <span>{epRuntime}</span>}
 									{episodeRatings[ep.IndexNumber] != null && (
 										<span className={css.tmdbBadge}>
-											<img className={css.tmdbIcon} src={`${serverUrl}/Moonfin/Assets/tmdb.svg`} alt="TMDB" />
+											<img className={css.tmdbIcon} src={getIconUrl(serverUrl, 'tmdb')} alt="TMDB" />
 											{episodeRatings[ep.IndexNumber].toFixed(1)}
 										</span>
 									)}
