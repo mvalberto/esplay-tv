@@ -610,7 +610,7 @@ export const buildThemeOverrideCss = (theme, options = {}) => {
 		// The Fire TV WebView only shows a video it can put on its own hardware plane and a
 		// rounded clip keeps it off one, so the stylesheet squares the frame, the ring and the
 		// container around them while a preview is up, which this sheet would otherwise round back
-		rules.push(`${prefix}.vega .${cardCss.previewFrame}, ${prefix}.vega .${cardCss.previewRing}, ${prefix}.vega .${cardCss.imageContainer}.${cardCss.previewHost} { border-radius: 0; }`);
+		rules.push(`${prefix}.vega .${cardCss.previewFrame}, ${prefix}.vega .${cardCss.previewRing}, ${prefix}.vega .${cardCss.imageContainer}.${cardCss.previewHost}, ${prefix}.tizen .${cardCss.previewFrame}, ${prefix}.tizen .${cardCss.previewRing}, ${prefix}.tizen .${cardCss.imageContainer}.${cardCss.previewHost} { border-radius: 0; }`);
 		rule(`.${cardCss.placeholder}`, `background: linear-gradient(135deg, ${accentA(0.25)} 0%, ${accentA(0.05)} 50%, transparent 100%), ${surfaceVariant};`);
 		rule(`.${cardCss.placeholderTitle}`, `color: ${onSurface};`);
 		rule(`.${cardCss.title}`, `color: ${theme.id === 'neon_pulse' ? accent : onSurface};`);

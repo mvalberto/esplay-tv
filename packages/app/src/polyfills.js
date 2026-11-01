@@ -8,7 +8,7 @@
 /* eslint-disable no-var */
 
 import {applyPerfTier} from './utils/perfTier';
-import {isVega, isXbox} from './platform';
+import {isTizen, isVega, isXbox} from './platform';
 import {installGamepadKeys} from '@moonfin/platform-xbox/keys';
 import {installMissingFileAnswer} from '@moonfin/platform-xbox/packageFiles';
 
@@ -136,6 +136,9 @@ if (typeof document !== 'undefined') {
 		document.documentElement.className = (document.documentElement.className ? document.documentElement.className + ' ' : '') + 'legacy';
 	}
 	if (isVega()) document.documentElement.classList.add('vega');
+	// EsPlay: Samsung TVs also leave a card preview's picture out under a rounded clip, so they
+	// get the Fire TV's square corners while it plays.
+	if (isTizen()) document.documentElement.classList.add('tizen');
 	if (isXbox()) document.documentElement.classList.add('xbox');
 	applyPerfTier(null);
 }

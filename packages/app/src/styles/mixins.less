@@ -246,7 +246,8 @@
 	// The Fire TV WebView only shows a video it can put on its own hardware plane, and
 	// a rounded clip turns into a mask that keeps it off one, so the corners go square
 	// there while the frame is up
-	:global(.vega) & {
+	:global(.vega) &,
+	:global(.tizen) & {
 		border-radius: 0;
 	}
 
@@ -276,7 +277,8 @@
 	}
 
 	// The ring loses its corners on the Fire TV with the frame it sits on
-	:global(.vega) & {
+	:global(.vega) &,
+	:global(.tizen) & {
 		border-radius: 0;
 	}
 }
