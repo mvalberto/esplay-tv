@@ -21,6 +21,10 @@ const titleKey = (title) => String(title || '')
 	.replace(/[^a-z0-9]+/g, ' ')
 	.trim();
 
+// ROMote opens each description with "🎮 To play, open the Play Game link on this
+// page.", meant for Emby's web page, not for the app.
+const withoutPlayHint = (overview) => String(overview || '').replace(/^\s*🎮[^\n]*\n*/, '');
+
 const fetchIndex = async () => {
 	const byFile = {};
 	const byTitle = {};
@@ -38,7 +42,7 @@ const fetchIndex = async () => {
 				id: item.Id,
 				name: item.Name,
 				imageTag: item.ImageTags?.Primary || null,
-				overview: item.Overview || null,
+				overview: withoutPlayHint(item.Overview) || null,
 				year: item.ProductionYear || null,
 				genres: item.Genres || []
 			};
