@@ -68,10 +68,8 @@
 	font-weight: 700;
 	line-height: normal;
 	text-align: center;
-	background-image: linear-gradient(to right, #BCBCBC, #E71414);
-	background-clip: text;
-	-webkit-text-fill-color: transparent;
-	color: transparent;
+	// EsPlay: plain white, without the grey-to-red gradient.
+	color: #FFFFFF;
 	animation: labelPulse 2s ease-in-out infinite alternate;
 }
 
@@ -83,6 +81,25 @@
 	to {
 		opacity: 1;
 		transform: scale(1);
+	}
+}
+
+// EsPlay: the logo's slanted button, empty, with a red band running through it.
+.esplayButton {
+	display: block;
+	overflow: visible;
+}
+
+.esplaySweep {
+	animation: esplaySweep 1.3s ease-in-out infinite;
+}
+
+@keyframes esplaySweep {
+	from {
+		transform: translateX(0);
+	}
+	to {
+		transform: translateX(170px);
 	}
 }
 
