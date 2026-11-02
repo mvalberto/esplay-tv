@@ -15,6 +15,7 @@ import useItemMenuHold, {cardIndexOf} from '../../hooks/useItemMenuHold';
 import {capitalize, createGridKeyDown, createToolbarKeyDown, cycleValue, stopPropagation} from '../../utils/gridChrome';
 import {PanelContainer} from '../../utils/spotlightContainers';
 import {mergeGenresBySpanishName} from '../../esplay/genreMerge';
+import {loadLiveTv, peekLiveTv, restoreLiveTvCache} from '../../esplay/liveTvCache';
 
 import css from './Genres.module.less';
 
@@ -37,7 +38,8 @@ const handleToolbarKeyDown = createToolbarKeyDown('genres-grid');
 const handleGridKeyDown = createGridKeyDown(css.grid, 'genres-home-btn');
 
 const Genres = ({onSelectGenre, onHome, backHandlerRef}) => {
-	const {api, serverUrl, hasMultipleServers} = useAuth();
+	const {api, serverUrl, user, hasMultipleServers} = useAuth();
+	const userId = user && user.Id;
 	const {settings} = useSettings();
 	const unifiedMode = settings.unifiedLibraryMode && hasMultipleServers;
 	const [genres, setGenres] = useState([]);
@@ -83,8 +85,21 @@ const Genres = ({onSelectGenre, onHome, backHandlerRef}) => {
 	}, [api, unifiedMode]);
 
 	useEffect(() => {
+		let alive = true;
 		const loadGenres = async () => {
-			setIsLoading(true);
+			// EsPlay keeps the finished list on the TV: it shows at once on the next visit and a
+			// fresh one is stored behind it, without moving the cards under the user.
+			const cacheKey = unifiedMode ? null :
+				`genres:${selectedLibrary?.Id || 'all'}:${settings.groupItemsIntoCollections ? 1 : 0}`;
+			if (cacheKey) await restoreLiveTvCache(serverUrl + '|' + userId);
+			const kept = cacheKey ? peekLiveTv(cacheKey) : null;
+			if (!alive) return;
+			if (kept) {
+				setGenres(kept);
+				setIsLoading(false);
+			} else {
+				setIsLoading(true);
+			}
 			try {
 				let genreList;
 				if (unifiedMode && !selectedLibrary) {
@@ -131,10 +146,30 @@ const Genres = ({onSelectGenre, onHome, backHandlerRef}) => {
 						genreList = [];
 					}
 				} else {
-					const genresResult = await api.getGenres(selectedLibrary?.Id);
-					genreList = genresResult.Items || [];
+					if (cacheKey) {
+						const list = await loadLiveTv(cacheKey, () => fetchGenreCards(), {persist: true});
+						if (alive && !kept) setGenres(list);
+						return;
+					}
+					genreList = await fetchGenreList();
 				}
 
+				if (alive) setGenres(await fetchGenreCards(genreList));
+			} catch (err) {
+				console.error('Failed to load genres:', err);
+			} finally {
+				if (alive) setIsLoading(false);
+			}
+
+			async function fetchGenreList () {
+				const genresResult = await api.getGenres(selectedLibrary?.Id);
+				return genresResult.Items || [];
+			}
+
+			// Each genre's count and a backdrop take a request apiece, so the names show first
+			// and every card fills in as its batch answers.
+			async function fetchGenreCards (fromServers) {
+				let genreList = fromServers || await fetchGenreList();
 				genreList = mergeGenresBySpanishName(genreList);
 				const groupCollections = Boolean(settings.groupItemsIntoCollections);
 				const BATCH_SIZE = 10;
@@ -213,23 +248,32 @@ const Genres = ({onSelectGenre, onHome, backHandlerRef}) => {
 					}
 				};
 
-				const allGenresWithData = [];
+				const cards = genreList.map((genre) => ({id: genre.Id, name: genre.Name, esplayGenreNames: genre.EsPlayGenreNames, itemCount: 0, backdropUrl: null}));
+				const showProgress = () => {
+					if (alive && !kept) {
+						setGenres(cards.filter(g => g !== null));
+						setIsLoading(false);
+					}
+				};
+				showProgress();
 				for (let i = 0; i < genreList.length; i += BATCH_SIZE) {
 					const batch = genreList.slice(i, i + BATCH_SIZE);
 					const batchResults = await Promise.all(batch.map(getGenreData));
-					allGenresWithData.push(...batchResults);
+					batchResults.forEach((card, j) => {
+						cards[i + j] = card;
+					});
+					showProgress();
 				}
 
-				setGenres(allGenresWithData.filter(g => g !== null));
-			} catch (err) {
-				console.error('Failed to load genres:', err);
-			} finally {
-				setIsLoading(false);
+				return cards.filter(g => g !== null);
 			}
 		};
 
 		loadGenres();
-	}, [api, serverUrl, selectedLibrary, unifiedMode, settings.groupItemsIntoCollections]);
+		return () => {
+			alive = false;
+		};
+	}, [api, serverUrl, userId, selectedLibrary, unifiedMode, settings.groupItemsIntoCollections]);
 
 	const sortedGenres = useMemo(() => {
 		const sorted = [...genres];

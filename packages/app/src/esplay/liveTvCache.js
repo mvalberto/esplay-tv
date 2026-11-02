@@ -1,4 +1,4 @@
-// EsPlay: live TV answers kept between visits and app starts, so the page shows
+// EsPlay: live TV and genre answers kept between visits and app starts, so a page shows
 // what it had at once and refreshes behind it. Channel logos and posters need
 // nothing here: their URLs carry the image tag, so the TV's HTTP cache keeps them.
 import {getFromStorage, saveToStorage} from '../services/storage';
