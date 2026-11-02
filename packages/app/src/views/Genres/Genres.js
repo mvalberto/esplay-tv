@@ -34,6 +34,37 @@ const SORT_OPTIONS = [
 
 const CARD_SIZES = ['small', 'medium', 'large'];
 
+// EsPlay: kept pictures the server no longer has (its title was deleted). They aren't kept again,
+// also after a restart, since the list may have been stored before the picture failed.
+const BROKEN_KEY = 'esplay_broken_backdrops';
+const brokenBackdrops = new Set((() => {
+	try {
+		return JSON.parse(window.localStorage.getItem(BROKEN_KEY)) || [];
+	} catch (e) {
+		return [];
+	}
+})());
+const markBroken = (url) => {
+	brokenBackdrops.add(url);
+	try {
+		window.localStorage.setItem(BROKEN_KEY, JSON.stringify([...brokenBackdrops].slice(-200)));
+	} catch (e) {
+		// Only this run skips it then.
+	}
+};
+
+// The genre's picture, or its fresh pick when the server doesn't answer with it.
+const GenreBackdrop = ({url, fallback}) => {
+	const [src, setSrc] = useState(url);
+	const handleError = useCallback(() => {
+		markBroken(src);
+		setSrc(src !== fallback && fallback && !brokenBackdrops.has(fallback) ? fallback : null);
+	}, [src, fallback]);
+
+	if (!src) return <div className={css.genreBackdropPlaceholder} />;
+	return <img className={css.genreBackdropImage} src={src} alt="" loading="lazy" onError={handleError} />;
+};
+
 const handleToolbarKeyDown = createToolbarKeyDown('genres-grid');
 const handleGridKeyDown = createGridKeyDown(css.grid, 'genres-home-btn');
 
@@ -149,6 +180,11 @@ const Genres = ({onSelectGenre, onHome, backHandlerRef}) => {
 					if (cacheKey) {
 						const list = await loadLiveTv(cacheKey, () => fetchGenreCards(), {persist: true});
 						if (alive && !kept) setGenres(list);
+						// A kept picture that failed without a spare takes the fresh one.
+						if (alive && kept) {
+							setGenres((shown) => shown.map((card) => (card && brokenBackdrops.has(card.backdropUrl) &&
+								list.find((fresh) => fresh.id === card.id)) || card));
+						}
 						return;
 					}
 					genreList = await fetchGenreList();
@@ -224,17 +260,24 @@ const Genres = ({onSelectGenre, onHome, backHandlerRef}) => {
 
 						// EsPlay: a genre keeps the picture it showed last time, so the TV has it stored
 						// and paints it at once instead of fetching a new random one on every visit.
+						// A fresh pick is always ready, in case the kept one is gone from the server.
 						const keptCard = kept && kept.find((card) => card && card.id === genre.Id);
-						let backdropUrl = null;
-						if (keptCard && keptCard.backdropUrl && keptCard.backdropUrl.indexOf('tag=') !== -1) {
-							backdropUrl = keptCard.backdropUrl;
-							usedBackdropIds.add((backdropUrl.split('/Items/')[1] || '').split('/')[0]);
-						} else if (chosen) {
+						let freshUrl = null;
+						if (chosen) {
 							const itemServerUrl = chosen.item._serverUrl || serverUrl;
 							const tags = chosen.backdropId === chosen.item.Id ?
 								chosen.item.BackdropImageTags : chosen.item.ParentBackdropImageTags;
 							// The tag lets the TV serve it from its own storage without asking the server.
-							backdropUrl = getImageUrl(itemServerUrl, chosen.backdropId, 'Backdrop', {maxWidth: 780, quality: 80, tag: tags[0]});
+							freshUrl = getImageUrl(itemServerUrl, chosen.backdropId, 'Backdrop', {maxWidth: 780, quality: 80, tag: tags[0]});
+						}
+						let backdropUrl = freshUrl;
+						let fallbackBackdropUrl = null;
+						if (keptCard && keptCard.backdropUrl && keptCard.backdropUrl.indexOf('tag=') !== -1 &&
+							!brokenBackdrops.has(keptCard.backdropUrl)) {
+							backdropUrl = keptCard.backdropUrl;
+							fallbackBackdropUrl = freshUrl !== backdropUrl ? freshUrl : null;
+							usedBackdropIds.add((backdropUrl.split('/Items/')[1] || '').split('/')[0]);
+						} else if (chosen) {
 							usedBackdropIds.add(chosen.backdropId);
 						}
 
@@ -244,6 +287,7 @@ const Genres = ({onSelectGenre, onHome, backHandlerRef}) => {
 							esplayGenreNames: genre.EsPlayGenreNames,
 							itemCount,
 							backdropUrl,
+							fallbackBackdropUrl,
 							_serverUrl: genre._serverUrl,
 							_serverType: genre._serverType,
 							_serverName: genre._serverName,
@@ -374,16 +418,7 @@ const Genres = ({onSelectGenre, onHome, backHandlerRef}) => {
 				data-index={index}
 			>
 				<div className={css.genreBackdrop}>
-					{genre.backdropUrl ? (
-						<img
-							className={css.genreBackdropImage}
-							src={genre.backdropUrl}
-							alt=""
-							loading="lazy"
-						/>
-					) : (
-						<div className={css.genreBackdropPlaceholder} />
-					)}
+					<GenreBackdrop key={genre.backdropUrl} url={genre.backdropUrl} fallback={genre.fallbackBackdropUrl} />
 					<div className={css.genreBackdropOverlay} />
 				</div>
 				<div className={css.genreInfo}>
