@@ -1,4 +1,4 @@
-import {useState, useEffect, useCallback, useRef} from 'react';
+import {memo, useState, useEffect, useCallback, useRef} from 'react';
 import Spottable from '@enact/spotlight/Spottable';
 import SpotlightContainerDecorator from '@enact/spotlight/SpotlightContainerDecorator';
 import Spotlight from '@enact/spotlight';
@@ -7,6 +7,7 @@ import {useAuth} from '../../context/AuthContext';
 import {getImageUrl} from '../../utils/helpers';
 import LiveTV from '../LiveTV';
 import {takePendingLiveTv} from '../../esplay/liveTvIntent';
+import {loadLiveTv, peekLiveTv, restoreLiveTvCache} from '../../esplay/liveTvCache';
 
 import css from './EsplayLiveTV.module.less';
 
@@ -16,6 +17,28 @@ import css from './EsplayLiveTV.module.less';
 
 const SpottableDiv = Spottable('div');
 const Section = SpotlightContainerDecorator({enterTo: 'last-focused'}, 'div');
+
+// A tag can hold hundreds of channels. Home shows a tag's first ones and the
+// Tags grid adds them a page at a time as focus nears the end.
+const ROW_SIZE = 20;
+const GRID_PAGE = 40;
+const RAIL_SETTLE_MS = 350;
+
+/** True once the element comes within a few rows of the visible part of the scroller. */
+const useNearScreen = (scrollerRef) => {
+	const ref = useRef(null);
+	const [near, setNear] = useState(typeof window === 'undefined' || !window.IntersectionObserver);
+	useEffect(() => {
+		if (near || !ref.current) return undefined;
+		const observer = new window.IntersectionObserver((entries) => {
+			// Older engines have no isIntersecting.
+			if (entries.some((entry) => entry.isIntersecting || entry.intersectionRatio > 0)) setNear(true);
+		}, {root: scrollerRef.current, rootMargin: '600px 0px'});
+		observer.observe(ref.current);
+		return () => observer.disconnect();
+	}, [near, scrollerRef]);
+	return [ref, near];
+};
 
 const NUMBERED = /^(\d+)\s+(.+)$/;
 const tagParts = (name) => {
@@ -33,6 +56,7 @@ const TagName = ({name, className}) => {
 	);
 };
 
+const itemsOf = (result) => (result && result.Items) || [];
 const parseDate = (raw) => (raw ? new Date(raw) : null);
 const twoDigits = (n) => (n < 10 ? '0' + n : '' + n);
 const hm = (date) => twoDigits(date.getHours()) + ':' + twoDigits(date.getMinutes());
@@ -70,11 +94,12 @@ const currentProgram = (channel) => {
 };
 
 /** A channel tile: its logo with progress, its name and what it airs. */
-const ChannelCard = ({serverUrl, channel, onSelect, spotlightId}) => {
+const ChannelCard = memo(({serverUrl, channel, index, onSelect, onFocusIndex, spotlightId}) => {
 	const now = currentProgram(channel);
 	const handleClick = useCallback(() => onSelect(channel), [channel, onSelect]);
+	const handleFocus = useCallback(() => onFocusIndex && onFocusIndex(index), [index, onFocusIndex]);
 	return (
-		<SpottableDiv className={css.channelCard} onClick={handleClick} data-spotlight-id={spotlightId}>
+		<SpottableDiv className={css.channelCard} onClick={handleClick} onFocus={handleFocus} data-spotlight-id={spotlightId}>
 			<div className={css.channelArt}>
 				<ChannelLogo serverUrl={serverUrl} channelId={channel.Id} tag={channel.ImageTags && channel.ImageTags.Primary} name={channel.Name} />
 				{now && <ProgressBar value={progressOf(now.start, now.end)} />}
@@ -83,10 +108,10 @@ const ChannelCard = ({serverUrl, channel, onSelect, spotlightId}) => {
 			<div className={css.cardSub}>{now ? now.name : $L('No guide information')}</div>
 		</SpottableDiv>
 	);
-};
+});
 
 /** A program airing now as a poster, the channel's logo when it has none. */
-const OnNowCard = ({serverUrl, program, onSelect}) => {
+const OnNowCard = memo(({serverUrl, program, onSelect}) => {
 	const start = parseDate(program.StartDate);
 	const end = parseDate(program.EndDate);
 	const handleClick = useCallback(() => onSelect(program.ChannelId), [program, onSelect]);
@@ -106,22 +131,28 @@ const OnNowCard = ({serverUrl, program, onSelect}) => {
 			<div className={css.cardSub}>{[program.ChannelName, timeRange(start, end)].filter(Boolean).join(' · ')}</div>
 		</SpottableDiv>
 	);
-};
+});
 
-const TagRow = ({serverUrl, tag, loadChannels, onSelectChannel, onOpenTag}) => {
+/** A tag's first channels. Once it nears the screen it shows the kept ones and asks for new. */
+const TagRow = ({serverUrl, tag, scrollerRef, loadRow, onSelectChannel, onOpenTag}) => {
 	const [channels, setChannels] = useState(null);
+	const [placeholderRef, near] = useNearScreen(scrollerRef);
 	useEffect(() => {
+		if (!near) return undefined;
 		let alive = true;
-		loadChannels(tag.Id).then((list) => {
+		const kept = peekLiveTv('row:' + tag.Id);
+		if (kept) setChannels(kept);
+		loadRow(tag.Id).then((list) => {
 			if (alive) setChannels(list);
 		});
 		return () => {
 			alive = false;
 		};
-	}, [loadChannels, tag.Id]);
+	}, [near, loadRow, tag.Id]);
 	const handleOpen = useCallback(() => onOpenTag(tag), [onOpenTag, tag]);
 	const handleSelect = useCallback((channel) => onSelectChannel(channel, tag.Id), [onSelectChannel, tag.Id]);
-	if (!channels || channels.length === 0) return null;
+	if (!channels) return <div ref={placeholderRef} className={css.rowPlaceholder} />;
+	if (channels.length === 0) return null;
 	return (
 		<Section className={css.row}>
 			<div className={css.rowHeader}>
@@ -146,12 +177,13 @@ const TagChip = ({tag, onOpen}) => {
 	);
 };
 
-const RailItem = ({tag, selected, onSelect}) => {
+const RailItem = ({tag, selected, onSelect, onFocusTag}) => {
 	const handleSelect = useCallback(() => onSelect(tag), [onSelect, tag]);
+	const handleFocus = useCallback(() => onFocusTag(tag), [onFocusTag, tag]);
 	return (
 		<SpottableDiv
 			className={selected ? css.railItemSelected : css.railItem}
-			onFocus={handleSelect}
+			onFocus={handleFocus}
 			onClick={handleSelect}
 		>
 			<TagName name={tag.Name} />
@@ -289,41 +321,55 @@ const ProgramRow = ({serverUrl, program, channel, isCurrent, onPlay, onRecord}) 
 };
 
 const EsplayLiveTV = ({onPlayChannel, onRecordings, backHandlerRef}) => {
-	const {api, serverUrl} = useAuth();
+	const {api, serverUrl, user} = useAuth();
 	const [section, setSection] = useState('home');
 	const [tags, setTags] = useState(null);
 	const [onNow, setOnNow] = useState([]);
 	const [selectedTag, setSelectedTag] = useState(null);
 	const [channelPage, setChannelPage] = useState(null);
-	const channelCache = useRef({});
+	const scrollerRef = useRef(null);
 	// Home, search or favorites may have sent us to a tag or a channel.
 	const intent = useRef(takePendingLiveTv());
 	const guideBackRef = useRef(null);
 	const lastSection = useRef('home');
 
-	const loadChannels = useCallback((tagId) => {
-		if (!channelCache.current[tagId]) {
-			channelCache.current[tagId] = api.getLiveTvChannelsWithTag(tagId).then(
-				(result) => (result && result.Items) || [],
-				() => {
-					delete channelCache.current[tagId];
-					return [];
-				}
-			);
-		}
-		return channelCache.current[tagId];
-	}, [api]);
+	// A tag's whole lineup stays in memory; Home's rows are also stored on the TV.
+	const loadChannels = useCallback((tagId) => loadLiveTv('tag:' + tagId, () => (
+		api.getLiveTvChannelsWithTag(tagId).then(itemsOf)
+	)).catch(() => []), [api]);
 
+	const loadRow = useCallback((tagId) => loadLiveTv('row:' + tagId, () => (
+		api.getLiveTvChannelsWithTag(tagId, ROW_SIZE).then(itemsOf)
+	), {persist: true}).catch(() => []), [api]);
+
+	const userId = user && user.Id;
 	useEffect(() => {
-		api.getLiveTvChannelTags().then((result) => {
-			const items = (result && (result.Items || result)) || [];
-			setTags(Array.isArray(items) ? items.filter((t) => t && t.Id) : []);
-		}, () => setTags([]));
-		api.getLiveTvAiringWithChannels(12).then((result) => {
-			setOnNow(((result && result.Items) || []).filter((p) => p.ChannelId));
-		}, () => setOnNow([]));
+		let alive = true;
+		restoreLiveTvCache(serverUrl + '|' + userId).then(() => {
+			if (!alive) return;
+			const keptTags = peekLiveTv('tags');
+			if (keptTags) setTags(keptTags);
+			const keptOnNow = peekLiveTv('onNow');
+			if (keptOnNow) setOnNow(keptOnNow);
+			loadLiveTv('tags', () => api.getLiveTvChannelTags().then((result) => {
+				const items = (result && (result.Items || result)) || [];
+				return Array.isArray(items) ? items.filter((t) => t && t.Id) : [];
+			}), {persist: true}).then((list) => {
+				if (alive) setTags(list);
+			}, () => {
+				if (alive && !keptTags) setTags([]);
+			});
+			loadLiveTv('onNow', () => api.getLiveTvAiringWithChannels(12).then((result) => (
+				itemsOf(result).filter((p) => p.ChannelId)
+			))).then((list) => {
+				if (alive) setOnNow(list);
+			}, () => {});
+		});
 		setTimeout(() => Spotlight.focus('esplay-tab-home'), 50);
-	}, [api]);
+		return () => {
+			alive = false;
+		};
+	}, [api, serverUrl, userId]);
 
 	useEffect(() => {
 		if (section === 'tags' && !selectedTag && tags && tags.length) setSelectedTag(tags[0]);
@@ -350,14 +396,22 @@ const EsplayLiveTV = ({onPlayChannel, onRecordings, backHandlerRef}) => {
 		setChannelPage({channel, lineup: lineup || [channel]});
 	}, [section]);
 
+	// The page opens straight away; the tag's full lineup, for channel up and
+	// down in the player, follows when it arrives.
+	const openChannelInTag = useCallback((channel, tagId) => {
+		openChannel(channel, [channel]);
+		loadChannels(tagId).then((list) => {
+			setChannelPage((page) => (page && page.channel === channel && list.length ? {channel, lineup: list} : page));
+		});
+	}, [loadChannels, openChannel]);
+
 	// A program from "On now" only knows its channel id: find it in the loaded tags.
 	const openChannelById = useCallback(async (channelId) => {
-		const tagIds = Object.keys(channelCache.current);
-		for (const id of tagIds) {
-			const list = await channelCache.current[id];
+		for (const tag of tags || []) {
+			const list = peekLiveTv('tag:' + tag.Id) || peekLiveTv('row:' + tag.Id) || [];
 			const found = list.find((c) => c.Id === channelId);
 			if (found) {
-				openChannel(found, list);
+				openChannelInTag(found, tag.Id);
 				return;
 			}
 		}
@@ -367,11 +421,7 @@ const EsplayLiveTV = ({onPlayChannel, onRecordings, backHandlerRef}) => {
 		} catch {
 			// The program's channel could not be loaded.
 		}
-	}, [api, openChannel]);
-
-	const openChannelInTag = useCallback((channel, tagId) => {
-		loadChannels(tagId).then((list) => openChannel(channel, list));
-	}, [loadChannels, openChannel]);
+	}, [api, tags, openChannel, openChannelInTag]);
 
 	const openTag = useCallback((tag) => {
 		setSelectedTag(tag);
@@ -447,7 +497,7 @@ const EsplayLiveTV = ({onPlayChannel, onRecordings, backHandlerRef}) => {
 			</div>
 
 			{section === 'home' && (
-				<div className={css.scroll}>
+				<div className={css.scroll} ref={scrollerRef}>
 					{tags && tags.length > 0 && (
 						<Section className={css.row}>
 							<div className={css.rowHeader}>
@@ -477,7 +527,8 @@ const EsplayLiveTV = ({onPlayChannel, onRecordings, backHandlerRef}) => {
 							key={tag.Id}
 							serverUrl={serverUrl}
 							tag={tag}
-							loadChannels={loadChannels}
+							scrollerRef={scrollerRef}
+							loadRow={loadRow}
 							onSelectChannel={openChannelInTag}
 							onOpenTag={openTag}
 						/>
@@ -505,11 +556,14 @@ const EsplayLiveTV = ({onPlayChannel, onRecordings, backHandlerRef}) => {
 /** The tags down the left; the focused tag's channels in a grid on the right. */
 const TagsView = ({serverUrl, tags, selected, onSelectTag, loadChannels, onSelectChannel}) => {
 	const [channels, setChannels] = useState(null);
+	const [shown, setShown] = useState(GRID_PAGE);
+	const settleTimer = useRef(null);
 	const handleSelectChannel = useCallback((channel) => onSelectChannel(channel, channels), [channels, onSelectChannel]);
 	useEffect(() => {
 		if (!selected) return undefined;
 		let alive = true;
-		setChannels(null);
+		setChannels(peekLiveTv('tag:' + selected.Id));
+		setShown(GRID_PAGE);
 		loadChannels(selected.Id).then((list) => {
 			if (alive) setChannels(list);
 		});
@@ -517,6 +571,22 @@ const TagsView = ({serverUrl, tags, selected, onSelectTag, loadChannels, onSelec
 			alive = false;
 		};
 	}, [loadChannels, selected]);
+
+	// Running down the rail only loads the tag focus stops on.
+	const handleFocusTag = useCallback((tag) => {
+		clearTimeout(settleTimer.current);
+		settleTimer.current = setTimeout(() => onSelectTag(tag), RAIL_SETTLE_MS);
+	}, [onSelectTag]);
+	const handleSelectTag = useCallback((tag) => {
+		clearTimeout(settleTimer.current);
+		onSelectTag(tag);
+	}, [onSelectTag]);
+	useEffect(() => () => clearTimeout(settleTimer.current), []);
+
+	// Two rows before the last card shown, the next page joins the grid.
+	const handleCardFocus = useCallback((index) => {
+		setShown((count) => (index >= count - 8 ? count + GRID_PAGE : count));
+	}, []);
 
 	return (
 		<div className={css.tagsView}>
@@ -526,7 +596,8 @@ const TagsView = ({serverUrl, tags, selected, onSelectTag, loadChannels, onSelec
 						key={tag.Id}
 						tag={tag}
 						selected={Boolean(selected && selected.Id === tag.Id)}
-						onSelect={onSelectTag}
+						onSelect={handleSelectTag}
+						onFocusTag={handleFocusTag}
 					/>
 				))}
 			</Section>
@@ -534,12 +605,14 @@ const TagsView = ({serverUrl, tags, selected, onSelectTag, loadChannels, onSelec
 				{selected && <TagName name={selected.Name} className={css.tagHeading} />}
 				<Section className={css.grid}>
 					{channels && channels.length === 0 && <div className={css.empty}>{$L('This tag has no channels.')}</div>}
-					{(channels || []).map((channel) => (
+					{(channels || []).slice(0, shown).map((channel, index) => (
 						<ChannelCard
 							key={channel.Id}
 							serverUrl={serverUrl}
 							channel={channel}
+							index={index}
 							onSelect={handleSelectChannel}
+							onFocusIndex={handleCardFocus}
 						/>
 					))}
 				</Section>

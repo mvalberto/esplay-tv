@@ -868,8 +868,9 @@ export const api = {
 	getLiveTvAiringWithChannels: (limit) =>
 		request(`/LiveTv/Programs/Recommended?UserId=${currentUser}&IsAiring=true&Limit=${limit}&Fields=ChannelInfo&EnableImages=true`),
 
-	getLiveTvChannelsWithTag: (tagId) =>
-		request(`/LiveTv/Channels?UserId=${currentUser}&TagIds=${encodeURIComponent(tagId)}&AddCurrentProgram=true&EnableUserData=true&Fields=ImageTags,UserData`),
+	// A limit keeps a Home row to its first channels; a tag can hold hundreds.
+	getLiveTvChannelsWithTag: (tagId, limit) =>
+		request(`/LiveTv/Channels?UserId=${currentUser}&TagIds=${encodeURIComponent(tagId)}&AddCurrentProgram=true&EnableUserData=true&Fields=ImageTags,UserData&EnableImageTypes=Primary&ImageTypeLimit=1&EnableTotalRecordCount=false${limit ? `&Limit=${limit}` : ''}`),
 
 	getLiveTvChannelSchedule: (channelId, hours = 24) => {
 		const now = new Date();
