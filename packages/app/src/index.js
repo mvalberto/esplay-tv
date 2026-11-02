@@ -3,6 +3,7 @@
 // Boot-critical polyfills — must be the very first import.
 import './polyfills';
 import 'whatwg-fetch';
+import './esplay/fastPlurals';
 
 import {createRoot, hydrateRoot} from 'react-dom/client';
 

@@ -14,6 +14,7 @@ import {loadCollectionRowItems} from './collectionRowItems';
 import {apiSortBy, getGenresIncludeTypes, isPlaylistOrder, resolveSortOrder} from '../../utils/homeRowSorting';
 import {collapseLatestTvItems} from '../../utils/latestMediaRowNormalizer';
 import {isPickedRow, isPickedRowShown, isSameServer} from '../../utils/pickedRows';
+import {SERVER_TO_TV_ROW, TV_TO_SERVER_ROW} from '../../utils/homeLayout';
 import mapBounded from '../../utils/mapBounded';
 
 // How many sections from the top load with Home. A picked row below them waits until Home comes
@@ -27,6 +28,11 @@ export const buildLoaderContext = ({api, serverUrl, settings, homeRowsConfig, el
 	const rowEnabled = (id) => homeRowsConfig.some((row) => row.enabled && row.id === id);
 	const enabledRows = homeRowsConfig.filter((row) => row.enabled);
 	const pickedRows = enabledRows.filter((row) => isPickedRow(row) && isPickedRowShown(row, settings, serverUrl));
+	// EsPlay: Home only shows a row whose id, in the TV's or the server's spelling, is switched on,
+	// so a row that is off isn't fetched just to be thrown away.
+	const shownIds = new Set();
+	enabledRows.forEach((row) => [row.id, TV_TO_SERVER_ROW[row.id], SERVER_TO_TV_ROW[row.id]].forEach((id) => id && shownIds.add(id)));
+	const rowShown = (id) => shownIds.has(id) || shownIds.has(TV_TO_SERVER_ROW[id]);
 	// Playlist order is not a server sort field, so every row hands the server
 	// the fallback and the rows that honor the arrangement check the setting
 	// itself.
@@ -43,6 +49,11 @@ export const buildLoaderContext = ({api, serverUrl, settings, homeRowsConfig, el
 		appendRows,
 		eligibleLibraries,
 		recommendations,
+		latestEnabled: rowShown('latest-media'),
+		recentlyReleasedEnabled: rowShown('recently-released'),
+		collectionsEnabled: settings.displayCollectionsRows && rowShown('collections'),
+		genresEnabled: settings.displayGenresRows && rowShown('genres'),
+		favoriteRowConfigs: settings.displayFavoritesRows ? FAVORITE_ROW_CONFIGS.filter((row) => rowShown(row.id)) : [],
 		favoriteSortBy,
 		favoriteSortOrder: resolveSortOrder(favoriteSortBy, settings.favoritesRowSortOrder),
 		collectionsSortBy,
@@ -91,7 +102,7 @@ const expandPlaylistsToItems = async (api, playlists, limit, usePlaylistOrder, s
 };
 
 const loadLatestAndRecentlyReleased = async (ctx) => {
-	const {api, appendRows, eligibleLibraries, settings} = ctx;
+	const {api, appendRows, eligibleLibraries, settings, latestEnabled, recentlyReleasedEnabled} = ctx;
 	try {
 		let includeItemTypes = 'Movie,Series';
 		switch (settings.recentlyReleasedSeriesType) {
@@ -107,14 +118,14 @@ const loadLatestAndRecentlyReleased = async (ctx) => {
 
 		const [latestResults, recentlyReleasedResults] = await Promise.all([
 			Promise.all(
-				eligibleLibraries.map(lib =>
+				(latestEnabled ? eligibleLibraries : []).map(lib =>
 					api.getLatest(lib.Id, latestMediaFetchLimitForCollection(lib.CollectionType, 16))
 						.then(latest => ({lib, latest}))
 						.catch(() => null)
 				)
 			),
 			Promise.all(
-				eligibleLibraries.map(lib =>
+				(recentlyReleasedEnabled ? eligibleLibraries : []).map(lib =>
 					api.getRecentlyReleased(lib.Id, 16, includeItemTypes)
 						.then(latest => ({lib, latest}))
 						.catch(() => null)
@@ -192,8 +203,8 @@ const loadLatestAndRecentlyReleased = async (ctx) => {
 };
 
 const loadCollections = async (ctx) => {
-	const {api, appendRows, collectionsSortBy, collectionsSortOrder, settings} = ctx;
-	if (!settings.displayCollectionsRows) return;
+	const {api, appendRows, collectionsSortBy, collectionsSortOrder} = ctx;
+	if (!ctx.collectionsEnabled) return;
 	try {
 		const collectionsResult = await scopedGetItems(api, {
 			IncludeItemTypes: 'BoxSet',
@@ -236,11 +247,11 @@ const loadStudios = async (ctx) => {
 };
 
 const loadFavorites = async (ctx) => {
-	const {api, appendRows, favoriteSortBy, favoriteSortOrder, settings} = ctx;
-	if (!settings.displayFavoritesRows) return;
+	const {api, appendRows, favoriteSortBy, favoriteSortOrder, favoriteRowConfigs} = ctx;
+	if (favoriteRowConfigs.length === 0) return;
 	try {
 		const favoriteResults = await Promise.all(
-			FAVORITE_ROW_CONFIGS.map((rowConfig) =>
+			favoriteRowConfigs.map((rowConfig) =>
 				scopedGetItems(api, {
 					IncludeItemTypes: rowConfig.includeItemTypes,
 					Filters: 'IsFavorite',
@@ -273,7 +284,7 @@ const loadFavorites = async (ctx) => {
 
 const loadGenres = async (ctx) => {
 	const {api, appendRows, genresIncludeTypes, genresSortBy, genresSortOrder, settings} = ctx;
-	if (!settings.displayGenresRows) return;
+	if (!ctx.genresEnabled) return;
 	try {
 		const genresResult = await api.getGenres(undefined, genresIncludeTypes, genresSortBy, genresSortOrder).catch(() => null);
 		if (genresResult?.Items?.length > 0) {
@@ -595,11 +606,11 @@ const loadPluginsAndRewatch = async (ctx) => {
 // one it skips is never taken for empty.
 const fetched = (flags) => Object.keys(flags).filter((id) => flags[id]);
 export const BROWSE_ROW_LOADERS = [
-	{load: loadLatestAndRecentlyReleased, sections: () => ['latest-media', 'recently-released']},
-	{load: loadCollections, sections: (ctx) => fetched({collections: ctx.settings.displayCollectionsRows})},
+	{load: loadLatestAndRecentlyReleased, sections: (ctx) => fetched({'latest-media': ctx.latestEnabled, 'recently-released': ctx.recentlyReleasedEnabled})},
+	{load: loadCollections, sections: (ctx) => fetched({collections: ctx.collectionsEnabled})},
 	{load: loadStudios, sections: (ctx) => fetched({studios: ctx.studiosEnabled})},
-	{load: loadFavorites, sections: (ctx) => (ctx.settings.displayFavoritesRows ? FAVORITE_ROW_CONFIGS.map((row) => row.id) : [])},
-	{load: loadGenres, sections: (ctx) => fetched({genres: ctx.settings.displayGenresRows})},
+	{load: loadFavorites, sections: (ctx) => ctx.favoriteRowConfigs.map((row) => row.id)},
+	{load: loadGenres, sections: (ctx) => fetched({genres: ctx.genresEnabled})},
 	{load: loadPlaylistsAndMusic, sections: (ctx) => fetched({
 		playlists: ctx.settings.displayPlaylistsRows,
 		audioartists: ctx.audioArtistsEnabled,

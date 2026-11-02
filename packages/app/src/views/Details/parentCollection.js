@@ -31,10 +31,14 @@ const namedCollection = (item, collections) => {
 const LEAN = {EnableImages: false, EnableUserData: false, EnableTotalRecordCount: false};
 
 let membershipLookup = null;
+// EsPlay: the list of collections is kept with the scan, since asking for it again on every
+// title took the server longer than the rest of the page.
+let collectionsLookup = null;
 
 // Exported so tests can clear the module state between cases.
 export const __resetCollectionMembership = () => {
 	membershipLookup = null;
+	collectionsLookup = null;
 };
 
 // A server without the route answers 404, and so does one asked about a title it does not
@@ -43,13 +47,23 @@ export const __resetCollectionMembership = () => {
 const directCollections = (api, item) =>
 	api.getItemCollections(item.Id).then((result) => result?.Items || []).catch(() => null);
 
-const allCollections = (api) => api.getItems({
+const fetchCollections = (api) => api.getItems({
 	...LEAN,
 	IncludeItemTypes: 'BoxSet',
 	Recursive: true,
 	Limit: MAX_COLLECTIONS,
 	Fields: 'ProviderIds'
-}).then((result) => result?.Items || []).catch(() => []);
+}).then((result) => result?.Items || []);
+
+const allCollections = (api) => {
+	if (!collectionsLookup) {
+		collectionsLookup = fetchCollections(api).catch(() => {
+			collectionsLookup = null;
+			return [];
+		});
+	}
+	return collectionsLookup;
+};
 
 const scanMembership = async (api, collections) => {
 	const owners = {};

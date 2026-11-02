@@ -19,7 +19,12 @@ const LIBRARY_TYPES_BY_ITEM_TYPE = {
 	Movie: 'movies',
 	Series: 'tvshows',
 	Episode: 'tvshows',
-	BoxSet: 'boxsets'
+	BoxSet: 'boxsets',
+	// EsPlay: without these, a favorite songs row asked every movie and series library too.
+	MusicArtist: 'music',
+	MusicAlbum: 'music',
+	Audio: 'music',
+	MusicVideo: 'musicvideos'
 };
 
 // Types that do not live under a library at all, so narrowing to libraries would find none of

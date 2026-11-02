@@ -55,7 +55,7 @@ export const isCacheValid = (timestamp, ttl) => {
 };
 
 // Stored rows older than this say nothing about which sections are empty now.
-const STORED_ROWS_MAX_AGE = 3 * 24 * 60 * 60 * 1000;
+export const STORED_ROWS_MAX_AGE = 3 * 24 * 60 * 60 * 1000;
 
 const fillsSection = (row, id) => row.items?.length > 0 && (row.id === id ||
 	(id === 'latest-media' && row.isLatestRow) || (id === 'recently-released' && row.isRecentlyReleasedRow));

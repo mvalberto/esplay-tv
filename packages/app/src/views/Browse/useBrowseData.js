@@ -20,7 +20,7 @@ import {withoutBlockedItems} from '../../services/parentalControls';
 import {activeSyncProfile} from '../../context/SettingsContext';
 import {
 	CACHE_TTL_LIBRARIES, CACHE_TTL_VOLATILE, VOLATILE_REFRESH_COOLDOWN_MS,
-	cancelPendingCacheSave, clearBrowseCache, clearMemoryCache, isCacheValid, loadBrowseCache, memoryCache, resetEmptySections, saveBrowseCache,
+	STORED_ROWS_MAX_AGE, cancelPendingCacheSave, clearBrowseCache, clearMemoryCache, isCacheValid, loadBrowseCache, memoryCache, resetEmptySections, saveBrowseCache,
 	seedEmptySections, settleSections
 } from './browseCache';
 
@@ -289,6 +289,8 @@ const useBrowseData = ({
 
 	useEffect(() => {
 		let cancelled = false;
+		// EsPlay: the rows on screen while a full load rebuilds them, so none blinks out meanwhile.
+		let keptShown = null;
 
 		// Loading cant clear until the media bar has something, or the first focus lands
 		// on a row rather than on the bar. Items we already remember do that on the spot,
@@ -305,6 +307,16 @@ const useBrowseData = ({
 				return;
 			}
 			await fetchFreshFeaturedItems(remembered);
+		};
+
+		const keptRows = async (rowConfigKey) => {
+			if (unifiedMode) return null;
+			if (memoryCache.rowConfigKey === rowConfigKey && memoryCache.rowData?.length) {
+				return {rowData: memoryCache.rowData, featuredItems: memoryCache.featuredItems, featuredConfigKey: memoryCache.featuredConfigKey};
+			}
+			const stored = await loadBrowseCache(cacheOwner.serverUrl, cacheOwner.userId);
+			return stored && (stored.rowConfigKey || 'per-library') === rowConfigKey && stored.rowData?.length &&
+				isCacheValid(stored.timestamp, STORED_ROWS_MAX_AGE) ? stored : null;
 		};
 
 		const loadData = async () => {
@@ -332,8 +344,18 @@ const useBrowseData = ({
 			const rowConfigKey = settings.mergeRecentRowsByType ? 'merged-recent' : 'per-library';
 
 			if (hasDynamicRowConfig || unifiedMode) {
+				// EsPlay: Home draws what it last held, from this visit or the TV's storage, and
+				// rebuilds it behind, instead of waiting for every row's request first.
+				const kept = await keptRows(rowConfigKey);
 				memoryCache.rowConfigKey = rowConfigKey;
-				dispatch({type: 'SET_LOADING', value: true});
+				if (kept && !cancelled) {
+					keptShown = kept.rowData;
+					dispatch({type: 'SET_ROW_DATA', rowData: kept.rowData});
+					await primeFeaturedItems(kept.featuredItems, kept.featuredConfigKey);
+					dispatch({type: 'SET_LOADING', value: false});
+				} else {
+					dispatch({type: 'SET_LOADING', value: true});
+				}
 				await fetchAllData(); // eslint-disable-line no-use-before-define
 				return;
 			}
@@ -501,7 +523,9 @@ const useBrowseData = ({
 					});
 				}
 
-				dispatch({type: 'SET_ROW_DATA', rowData});
+				// Rows still to come keep their last items on screen until their loader replaces them;
+				// only what came back from the server is cached.
+				dispatch({type: 'SET_ROW_DATA', rowData: keptShown ? mergeRowsById(keptShown, rowData) : rowData});
 				memoryCache.rowData = [...rowData];
 				// The Mediabar is populated only by the settings-aware loader so it can
 				// never show a library outside the selected sources. Rows that answer to

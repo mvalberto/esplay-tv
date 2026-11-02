@@ -745,7 +745,7 @@ const AppContent = (props) => {
 		}).catch(() => {});
 
 		if (isTizen()) {
-			import('@moonfin/platform-tizen/smarthub').then(m => m.initSmartHub()).catch(() => {});
+			import('@moonfin/platform-tizen/smarthub').then(m => m.initSmartHub(afterHomeReady())).catch(() => {});
 		}
 
 		cleanupHandlersRef.current = () => {

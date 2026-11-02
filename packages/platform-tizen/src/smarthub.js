@@ -357,7 +357,8 @@ export async function runSmartViewUpdate () {
  * Start the Smart Hub preview updater loop.
  * Waits for authentication, then updates every 10 minutes.
  */
-export async function startSmartHubUpdater () {
+export async function startSmartHubUpdater (startAfter) {
+	if (startAfter) await startAfter;
 	// Wait for authentication to be ready
 	let retries = 0;
 	while (!getUserId() || !getServerUrl()) {
@@ -445,11 +446,17 @@ function getTizenVersion () {
 	}
 }
 
+let smartHubStarted = false;
+
 /**
  * Initialize Smart Hub Preview integration.
  * Only runs on Tizen 4+. Sets up deep link handling and starts the updater.
+ * EsPlay: runs once however often it's called, and the first preview waits for
+ * startAfter so its Resume and Next Up calls don't compete with Home's.
  */
-export function initSmartHub () {
+export function initSmartHub (startAfter) {
+	if (smartHubStarted) return;
+	smartHubStarted = true;
 	if (typeof tizen === 'undefined') {
 		console.log('[SmartHub] Not on Tizen platform, skipping');
 		return;
@@ -468,7 +475,7 @@ export function initSmartHub () {
 	handleDeepLink();
 
 	// Start the background updater
-	startSmartHubUpdater().catch(function (err) {
+	startSmartHubUpdater(startAfter).catch(function (err) {
 		console.error('[SmartHub] Updater failed:', err);
 	});
 }
