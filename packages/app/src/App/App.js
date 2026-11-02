@@ -106,6 +106,7 @@ const SetupWizard = lazy(() => import('../views/SetupWizard'));
 import '../styles/perf-overrides.less';
 import css from './App.module.less';
 import {setPendingLiveTv} from '../esplay/liveTvIntent';
+import {findMoonbaseGame} from '../esplay/romoteGames';
 
 const MAX_HISTORY_LENGTH = 10;
 const SpottableButton = Spottable('button');
@@ -983,6 +984,21 @@ const AppContent = (props) => {
 		if (item.Type === 'PhotoAlbum') {
 			setSelectedLibrary(item);
 			navigateTo(PANELS.LIBRARY);
+			return;
+		}
+		// EsPlay opens an Emby game (Home rows, favorites, search) on its game page with Play.
+		if (item.Type === 'Game') {
+			findMoonbaseGame(item.Id).then((found) => {
+				if (!found) {
+					detailsItemStackRef.current = [];
+					setSelectedItem(item);
+					navigateTo(PANELS.DETAILS);
+					return;
+				}
+				setSelectedGameLibrary(found.library);
+				setSelectedGame(found.game);
+				navigateTo(PANELS.GAME_DETAILS);
+			});
 			return;
 		}
 		if (item.Type === 'Audio') {

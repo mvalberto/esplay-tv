@@ -3,6 +3,7 @@
 // those same files into Emby's own Game items, so EsPlay takes the box art
 // and details from there, matching by file name and then by title.
 import {api, getServerUrl} from '../services/jellyfinApi';
+import {getGame, getLibraries} from '../services/gamesApi';
 import {getImageUrl} from '../utils/helpers';
 
 const PAGE = 1000;
@@ -88,3 +89,29 @@ export const matchRomoteGames = async (games) => {
 export const romoteImageUrl = (match, maxWidth) => (match?.imageTag ?
 	getImageUrl(getServerUrl(), match.id, 'Primary', {maxWidth, tag: match.imageTag}) :
 	null);
+
+// The Moonbase game and library for an Emby Game item, or null when its ROM isn't
+// in a Moonbase game library. Moonbase names a game by its ROM's path in base64url
+// without padding, and the ROMote item points at that same file.
+export const findMoonbaseGame = async (itemId) => {
+	let gameId, libraries;
+	try {
+		const item = await api.getItem(itemId);
+		if (!item?.Path) return null;
+		gameId = btoa(unescape(encodeURIComponent(item.Path)))
+			.replace(/\+/g, '-').replace(/\//g, '_').replace(/[=]+$/, '');
+		libraries = await getLibraries();
+	} catch (e) {
+		return null;
+	}
+	for (const library of libraries || []) {
+		try {
+			// A ROM outside this library answers 404.
+			const game = await getGame(library.id, gameId);
+			if (game) return {library: {Id: library.id, Name: library.name}, game};
+		} catch (e) {
+			// Not in this library.
+		}
+	}
+	return null;
+};
