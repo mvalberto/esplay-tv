@@ -153,7 +153,8 @@ const GenreBrowse = ({genre, libraryId, onSelectItem, backHandlerRef}) => {
 				SortBy: sortField,
 				SortOrder: sortOrder,
 				Recursive: true,
-				Genres: genre.name,
+				// EsPlay folds "Acción" and "Action" into one card and asks for both.
+				Genres: genre.esplayGenreNames || genre.name,
 				EnableTotalRecordCount: true,
 				CollapseBoxSetItems: groupCollections,
 				ExcludeItemTypes: 'Playlist,Episode,Season,Folder',

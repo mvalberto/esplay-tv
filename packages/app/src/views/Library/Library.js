@@ -269,7 +269,7 @@ const Library = ({library, genreFilter, studioFilter, onSelectItem, onViewPhoto,
 	const isBookLibrary = isBookLibraryType(library?.CollectionType);
 	const [restoredBookGrid] = useState(() => (bookGridReturn?.libraryId === library?.Id ? bookGridReturn : null));
 	// The music category screen that's open, from musicScreenFor.
-	const [musicScreen, setMusicScreen] = useState(() => (musicScreenReturn?.libraryId === library?.Id ? musicScreenReturn.screen : null));
+	const [musicScreen, setMusicScreen] = useState(() => (musicScreenReturn?.libraryId === library?.Id ? musicScreenReturn?.screen : null));
 	// The book library screen that's open, from bookScreens, kept with its library so another one
 	// opens at its own root.
 	const [bookScreenOf, setBookScreenOf] = useState(() => (bookScreenReturn?.libraryId === library?.Id ? bookScreenReturn : null));
@@ -339,7 +339,7 @@ const Library = ({library, genreFilter, studioFilter, onSelectItem, onViewPhoto,
 	const canFolderView = library != null && !isFilterMode && !musicGridView && !bookGridView;
 	const isFolderView = (canFolderView && (folderView === 'on' || (folderView !== 'off' && (isMixedContentLibrary || isHomeVideosLibrary)))) ||
 		Boolean(bookGridView?.folders);
-	const [folderStack, setFolderStack] = useState(() => (returnTo?.libraryId === libraryId && returnTo.folderStack) || []);
+	const [folderStack, setFolderStack] = useState(() => (returnTo?.libraryId === libraryId && returnTo?.folderStack) || []);
 	const currentFolderId = folderStack.length > 0 ? folderStack[folderStack.length - 1].id : library?.Id;
 	const currentFolderCollectionType = folderStack.length > 0 ? folderStack[folderStack.length - 1].collectionType?.toLowerCase() : null;
 	// A genre browse can be narrowed to one library from the panel, which holds until the next genre.
