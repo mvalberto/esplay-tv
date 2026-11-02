@@ -222,10 +222,19 @@ const Genres = ({onSelectGenre, onHome, backHandlerRef}) => {
 						const chosen = withBackdrops.find((entry) => !usedBackdropIds.has(entry.backdropId)) ||
 							withBackdrops[0];
 
+						// EsPlay: a genre keeps the picture it showed last time, so the TV has it stored
+						// and paints it at once instead of fetching a new random one on every visit.
+						const keptCard = kept && kept.find((card) => card && card.id === genre.Id);
 						let backdropUrl = null;
-						if (chosen) {
+						if (keptCard && keptCard.backdropUrl && keptCard.backdropUrl.indexOf('tag=') !== -1) {
+							backdropUrl = keptCard.backdropUrl;
+							usedBackdropIds.add((backdropUrl.split('/Items/')[1] || '').split('/')[0]);
+						} else if (chosen) {
 							const itemServerUrl = chosen.item._serverUrl || serverUrl;
-							backdropUrl = getImageUrl(itemServerUrl, chosen.backdropId, 'Backdrop', {maxWidth: 780, quality: 80});
+							const tags = chosen.backdropId === chosen.item.Id ?
+								chosen.item.BackdropImageTags : chosen.item.ParentBackdropImageTags;
+							// The tag lets the TV serve it from its own storage without asking the server.
+							backdropUrl = getImageUrl(itemServerUrl, chosen.backdropId, 'Backdrop', {maxWidth: 780, quality: 80, tag: tags[0]});
 							usedBackdropIds.add(chosen.backdropId);
 						}
 
