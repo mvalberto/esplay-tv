@@ -64,7 +64,7 @@ const TvIcon = () => (
 	</svg>
 );
 
-/** The program at the top of the On Now row: the one under the remote, else the first. */
+/** A program airing now at the top of Home, when it is the one under the remote. */
 export const EsplayLiveHero = ({item, serverUrl}) => {
 	const itemServerUrl = item?._serverUrl || serverUrl;
 	const [picture, onError] = usePicture(item, itemServerUrl, ART_KINDS, 1280);

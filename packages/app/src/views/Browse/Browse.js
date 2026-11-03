@@ -11,7 +11,7 @@ import {useSettings} from '../../context/SettingsContext';
 import {useSeerr} from '../../context/SeerrContext';
 import {ClassicMediaRow, ModernMediaRow} from '../../components/MediaRow';
 import MediaPreviewContext from '../../components/MediaCard/MediaPreviewContext';
-import {EsplayLiveHero} from '../../components/MediaCard/EsplayLiveCard';
+import EsplayBrowseHero from './EsplayBrowseHero';
 import {modernRowSpacing} from '../../components/MediaCard/modernCardLayout';
 import SeerrTileRow from '../../components/SeerrTileRow';
 import LibraryButtonRow from '../../components/LibraryButtonRow';
@@ -125,6 +125,7 @@ const Browse = ({
 		if (node.scrollLeft !== 0) node.scrollLeft = 0;
 	}, []);
 	const detailSectionRef = useRef(null);
+	const esplayHeroRef = useRef(null);
 	const lastFocusedRowRef = useRef(null);
 	const wasVisibleRef = useRef(true);
 	const prevFilteredRowsRef = useRef([]);
@@ -725,15 +726,14 @@ const Browse = ({
 		settleRow(rowIndex, rowChanged ? 2 : 1);
 	}, [setBrowseMode, pinMainScroll, settleRow, loadSectionsNear]);
 
-	// EsPlay: On Now opens with a showcase of the program under the remote.
-	const renderLiveHero = useCallback((item) => <EsplayLiveHero item={item} serverUrl={serverUrl} />, [serverUrl]);
-
 	const backdropTimerRef = useRef(null);
 	const handleFocusItem = useCallback((item) => {
 		const live = liveRef.current;
 		if (live.showTopInfoArea) {
 			detailSectionRef.current?.handleFocusItem(item);
-		} else if (!live.useModernRows) {
+		} else if (live.useModernRows) {
+			esplayHeroRef.current?.show(item);
+		} else {
 			// The info overlay used to be the only feed into the backdrop, so
 			// turning it off silently killed backdrops with it. Classic rows hand
 			// the item over directly when the overlay isn't there to do it, once
@@ -764,6 +764,9 @@ const Browse = ({
 
 	const navOffsetClass = settings.navbarPosition === 'left' ? css.sidebarOffset : css.topbarOffset;
 	const rowsClipClass = showTopInfoArea ? '' : css.rowsClipTop;
+	// EsPlay: with the modern rows the top of Home shows the title under the remote, and its
+	// preview plays there rather than in the card.
+	const esplayHero = useModernRows && browseMode === 'rows';
 
 	if (isLoading) {
 		return (
@@ -883,10 +886,12 @@ const Browse = ({
 					/>
 				)}
 
-				<MediaPreviewContext.Provider value={mediaPreview}>
+				{esplayHero && <EsplayBrowseHero ref={esplayHeroRef} serverUrl={serverUrl} preview={mediaPreview} sidebar={settings.navbarPosition === 'left'} />}
+
+				<MediaPreviewContext.Provider value={useModernRows ? null : mediaPreview}>
 				<div
 					ref={contentRowsRef}
-					className={`${css.contentRows} ${browseMode === 'rows' ? css.rowsMode : ''} ${rowsClipClass} ${rowPeek && trailerHidesChrome ? css.rowsHidden : ''}`}
+					className={`${css.contentRows} ${browseMode === 'rows' ? css.rowsMode : ''} ${rowsClipClass} ${esplayHero ? css.esplayHeroRows : ''} ${rowPeek && trailerHidesChrome ? css.rowsHidden : ''}`}
 					style={rowPeek ? {height: rem(rowPeek)} : undefined}
 					data-pointer-rows
 				>
@@ -958,7 +963,6 @@ const Browse = ({
 								serverUrl={serverUrl}
 								cardType={row.type}
 								rowImageType={rowImageType(row, settings)}
-								renderHero={useModernRows && row.id === 'onnow' ? renderLiveHero : undefined}
 								onSelectItem={selectHandler}
 								onFocus={handleRowFocus}
 								onFocusItem={handleFocusItem}

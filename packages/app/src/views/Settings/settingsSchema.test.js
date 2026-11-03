@@ -296,7 +296,7 @@ describe('the media preview switches', () => {
 	test('shows the mode the two synced keys add up to', () => {
 		const preview = previewRow();
 		expect(preview.value(withSettings({episodePreviewEnabled: false, mediaPreviewMode: 'trailer'}))).toBe('off');
-		expect(preview.value(withSettings({episodePreviewEnabled: true}))).toBe('media');
+		expect(preview.value(withSettings({episodePreviewEnabled: true, mediaPreviewMode: 'media'}))).toBe('media');
 		expect(preview.value(withSettings({episodePreviewEnabled: true, mediaPreviewMode: 'trailer'}))).toBe('trailer');
 	});
 

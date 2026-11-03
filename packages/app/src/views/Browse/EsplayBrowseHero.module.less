@@ -1,0 +1,127 @@
+// EsPlay: the showcase at the top of Home. The navbar floats over its top, so the text sits low.
+// Masks are written with their -webkit- forms for the older Samsung sets.
+
+@hero-height: 400px;
+
+.hero {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: @hero-height;
+	overflow: hidden;
+	z-index: 2;
+	pointer-events: none;
+}
+
+// The side menu's rail sits over the left edge, so the showcase starts where the rows do.
+.sidebar {
+	left: 50px;
+}
+
+.art {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 66%;
+	height: 100%;
+}
+
+// The picture fades out through masks. A Samsung or Fire TV only shows a video it can put on
+// its own hardware plane, which a mask keeps it off, so the video is shaded by a gradient on top.
+.pictureFade {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	-webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.6) 22%, #000 48%);
+	mask-image: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.6) 22%, #000 48%);
+	transition: opacity 0.4s ease;
+}
+
+.picture {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+	-webkit-mask-image: linear-gradient(0deg, transparent 0%, #000 42%);
+	mask-image: linear-gradient(0deg, transparent 0%, #000 42%);
+}
+
+.video {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+
+	// Nothing opaque behind the video either: the Samsung draws it through a hole in the
+	// page, and a black box under it stays black.
+	video {
+		position: absolute;
+		border: none;
+	}
+}
+
+.videoShade {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background:
+		linear-gradient(0deg, var(--theme-background, #0a0a0a) 0%, rgba(10, 10, 10, 0) 42%),
+		linear-gradient(90deg, var(--theme-background, #0a0a0a) 0%, rgba(10, 10, 10, 0.4) 22%, rgba(10, 10, 10, 0) 48%);
+}
+
+.hidden {
+	opacity: 0;
+}
+
+.text {
+	position: absolute;
+	left: 60px;
+	bottom: 26px;
+	width: 46%;
+}
+
+.logo {
+	display: block;
+	max-width: 460px;
+	max-height: 130px;
+	object-fit: contain;
+	object-position: left bottom;
+}
+
+.title {
+	color: #FFFFFF;
+	font-size: 56px;
+	font-weight: 800;
+	line-height: 1.05;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+.details {
+	margin-top: 14px;
+	color: #C4C4CA;
+	font-size: 24px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.overview {
+	margin-top: 14px;
+	color: #A8A8B0;
+	font-size: 22px;
+	line-height: 1.4;
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}

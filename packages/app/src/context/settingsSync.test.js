@@ -514,9 +514,9 @@ describe('the keyboard style', () => {
 });
 
 describe('the media preview switches', () => {
-	test('default to off with sound on, landing on Media Preview once turned on', () => {
-		expect(defaultSettings.episodePreviewEnabled).toBe(false);
-		expect(defaultSettings.mediaPreviewMode).toBe('media');
+	test('EsPlay: default to trailers with sound on', () => {
+		expect(defaultSettings.episodePreviewEnabled).toBe(true);
+		expect(defaultSettings.mediaPreviewMode).toBe('trailer');
 		expect(defaultSettings.previewAudioEnabled).toBe(true);
 	});
 

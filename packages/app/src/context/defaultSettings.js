@@ -277,8 +277,9 @@ export const defaultSettings = {
 	hideBackdropsInLibraries: false,
 	useSeriesThumbnails: false,
 	// The server keys, as the other clients store them, so they sync as they are.
-	episodePreviewEnabled: false,
-	mediaPreviewMode: 'media',
+	// EsPlay: the title under the remote plays its trailer at the top of Home.
+	episodePreviewEnabled: true,
+	mediaPreviewMode: 'trailer',
 	previewAudioEnabled: true,
 	previewVolume: 100,
 	homeRowsPosterSize: 'default',

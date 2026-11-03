@@ -40,8 +40,7 @@ const ModernMediaRow = ({
 	onLoadMore,
 	menuOptions,
 	deferImages = false,
-	ratingsSurface,
-	renderHero
+	ratingsSurface
 }) => {
 	const {settings} = useSettings();
 	const scrollerRef = useRef(null);
@@ -231,8 +230,6 @@ const ModernMediaRow = ({
 			onBlur={handleBlur}
 			style={rowStyle}
 		>
-			{/* EsPlay: a showcase of the focused card, else the first, above the title. */}
-			{renderHero && renderHero(items[focusedIndex] || items[0])}
 			<h2 className={css.title}>{title}</h2>
 			{subtitle && <div className={css.subtitle}>{subtitle}</div>}
 			<div className={css.scroller} ref={scrollerRef} onFocus={handleFocus}>
