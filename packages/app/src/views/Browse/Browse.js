@@ -11,6 +11,7 @@ import {useSettings} from '../../context/SettingsContext';
 import {useSeerr} from '../../context/SeerrContext';
 import {ClassicMediaRow, ModernMediaRow} from '../../components/MediaRow';
 import MediaPreviewContext from '../../components/MediaCard/MediaPreviewContext';
+import {EsplayLiveHero} from '../../components/MediaCard/EsplayLiveCard';
 import {modernRowSpacing} from '../../components/MediaCard/modernCardLayout';
 import SeerrTileRow from '../../components/SeerrTileRow';
 import LibraryButtonRow from '../../components/LibraryButtonRow';
@@ -724,6 +725,9 @@ const Browse = ({
 		settleRow(rowIndex, rowChanged ? 2 : 1);
 	}, [setBrowseMode, pinMainScroll, settleRow, loadSectionsNear]);
 
+	// EsPlay: On Now opens with a showcase of the program under the remote.
+	const renderLiveHero = useCallback((item) => <EsplayLiveHero item={item} serverUrl={serverUrl} />, [serverUrl]);
+
 	const backdropTimerRef = useRef(null);
 	const handleFocusItem = useCallback((item) => {
 		const live = liveRef.current;
@@ -954,6 +958,7 @@ const Browse = ({
 								serverUrl={serverUrl}
 								cardType={row.type}
 								rowImageType={rowImageType(row, settings)}
+								renderHero={useModernRows && row.id === 'onnow' ? renderLiveHero : undefined}
 								onSelectItem={selectHandler}
 								onFocus={handleRowFocus}
 								onFocusItem={handleFocusItem}

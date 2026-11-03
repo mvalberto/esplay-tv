@@ -27,7 +27,8 @@ const ROW_TITLES = {
 	audioplaylists: () => $L('Music Playlists'),
 	resumeaudio: () => $L('Continue Listening'),
 	activerecordings: () => $L('Recordings'),
-	livetv: () => $L('Live TV'),
+	// EsPlay: the live TV row holds the channel tags, under On Now.
+	livetv: () => $L('Tags'),
 	onnow: () => $L('On Now')
 };
 
@@ -149,10 +150,19 @@ const orderRows = (rows, rowOrderMap) => {
 		Number.isFinite(nextUpOrder) ? nextUpOrder : Number.MAX_SAFE_INTEGER
 	);
 
+	// EsPlay: On Now takes the earlier of the two live TV places, with the tags right below it.
+	const hasOnNow = rows.some((row) => row.id === 'onnow');
+	const liveOrders = ['onnow', 'livetv'].map((id) => rowOrderMap.get(id)).filter(Number.isFinite);
+	const liveOrder = hasOnNow && liveOrders.length ? Math.min(...liveOrders) : null;
+
 	return rows
 		.map((row, index) => {
 			let order = rowOrderMap.get(row.id);
-			if (row.id === 'continue-nextup') {
+			if (liveOrder !== null && row.id === 'onnow') {
+				order = liveOrder;
+			} else if (liveOrder !== null && row.id === 'livetv') {
+				order = liveOrder + 0.5;
+			} else if (row.id === 'continue-nextup') {
 				order = Number.isFinite(continueOrder) ? continueOrder : 0;
 			} else if (row.isLatestRow) {
 				order = rowOrderMap.get('latest-media');
