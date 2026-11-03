@@ -8,12 +8,43 @@ import RatingsRow from '../../components/RatingsRow';
 import {KEYS} from '../../utils/keys';
 import useTrailerPreview from './useTrailerPreview';
 import css from './Browse.module.less';
+import esplay from './EsplayFeaturedBanner.module.less';
 import {carouselIntervalMs} from '../../utils/carouselTiming';
 import {useScreensaverActive} from '../../hooks/useScreensaverActive';
 import {rem} from '../../utils/rootScale';
 
 const FEATURED_GENRES_LIMIT = 3;
 const PRELOAD_ADJACENT_SLIDES = 2;
+
+// EsPlay: the bar is the showcase of the rows below at full size, as Prime Video's: the
+// picture or trailer on the right fading into the dark, the text on the left and a progress
+// mark per title. Left and Right still change title, OK opens it.
+const ESPLAY_LOOK = true;
+const NEW_FOR_DAYS = 30;
+
+const isRecent = (item) => {
+	const added = item.DateCreated ? Date.parse(item.DateCreated) : NaN;
+	return !isNaN(added) && Date.now() - added < NEW_FOR_DAYS * 24 * 60 * 60 * 1000;
+};
+
+const kindOf = (item) => {
+	if (item.Type === 'Movie') return $L('Movie');
+	if (item.Type === 'Series') return $L('Series');
+	return '';
+};
+
+const detailsOf = (item) => {
+	const parts = [];
+	if (item.ProductionYear) parts.push(String(item.ProductionYear));
+	if (item.OfficialRating) parts.push(item.OfficialRating);
+	if (item.CommunityRating) parts.push(`★ ${Number(item.CommunityRating).toFixed(1)}`);
+	if (item.RunTimeTicks && item.Type !== 'Series') {
+		const dur = formatDuration(item.RunTimeTicks);
+		if (dur && dur !== '0m') parts.push(dur);
+	}
+	if (item.Genres?.length) parts.push(item.Genres.slice(0, FEATURED_GENRES_LIMIT).join(', '));
+	return parts.join(' · ');
+};
 
 const SpottableDiv = Spottable('div');
 const SpottableButton = Spottable('button');
@@ -64,7 +95,8 @@ const FeaturedBanner = memo(({
 		api,
 		getItemServerUrl,
 		onEnded: handleTrailerEnded,
-		hidesChrome: featuredFocused
+		// EsPlay's trailer stays in the picture's box, so the menu and the rows stay too.
+		hidesChrome: featuredFocused && !ESPLAY_LOOK
 	});
 
 	useEffect(() => {
@@ -202,6 +234,70 @@ const FeaturedBanner = memo(({
 	}, [handleFeaturedNext]);
 
 	if (!isVisible || !currentFeatured) return null;
+
+	if (ESPLAY_LOOK) {
+		const carouselSpeed = carouselIntervalMs(settings.autoAdvance, settings.autoAdvanceInterval, settings.carouselSpeed);
+		const advancing = featuredFocused && !screensaverActive && !trailerHolding && carouselSpeed > 0 && featuredItems.length > 1;
+		const details = detailsOf(currentFeatured);
+		const kind = kindOf(currentFeatured);
+		return (
+			<div className={css.featuredBanner}>
+				<SpottableDiv
+					className={css.featuredInner}
+					spotlightId="featured-banner"
+					onClick={handleFeaturedClick}
+					onKeyDown={handleFeaturedKeyDown}
+					onFocus={handleFeaturedFocus}
+					onBlur={handleFeaturedBlur}
+				>
+					<div className={esplay.art}>
+						<div className={`${esplay.pictureFade} ${trailerActive ? esplay.hidden : ''}`}>
+							<img
+								key={currentFeatured.Id}
+								className={esplay.picture}
+								src={getFeaturedBackdropUrl(getItemServerUrl(currentFeatured), currentFeatured, {maxWidth: 1920, quality: 85})}
+								alt=""
+							/>
+						</div>
+						<div className={esplay.video} ref={trailerContainerRef} />
+						{trailerActive && <div className={`${esplay.videoShade} ${esplay.shadeLeft}`} />}
+						{trailerActive && <div className={`${esplay.videoShade} ${esplay.shadeBottom}`} />}
+					</div>
+					<div className={`${esplay.text} ${settings.navbarPosition === 'left' ? esplay.sidebar : ''} ${trailerActive ? esplay.playing : ''}`}>
+						<div className={esplay.badges}>
+							{isRecent(currentFeatured) && <span className={esplay.newBadge}>{$L('NEW')}</span>}
+							{kind && <span className={esplay.kind}>{kind}</span>}
+						</div>
+						{currentFeatured.LogoUrl ? (
+							<img key={currentFeatured.LogoUrl} className={esplay.logo} src={currentFeatured.LogoUrl} alt={currentFeatured.Name} />
+						) : (
+							<div className={esplay.title}>{currentFeatured.Name}</div>
+						)}
+						{details && <div className={esplay.details}>{details}</div>}
+						{!settings.hideHomeMediaDescription && currentFeatured.Overview && (
+							<div className={esplay.overview}>{currentFeatured.Overview}</div>
+						)}
+						{featuredItems.length > 1 && (
+							<div className={esplay.progress}>
+								{featuredItems.map((item, idx) => (
+									idx === currentIndex ? (
+										<span key={idx} className={`${esplay.segment} ${esplay.current}`}>
+											<span
+												key={`${currentIndex}-${advancing}`}
+												className={advancing ? esplay.filling : esplay.filled}
+												style={advancing ? {animationDuration: `${carouselSpeed}ms`} : undefined}
+											/>
+										</span>
+									) : <span key={idx} className={esplay.segment} />
+								))}
+								<span className={esplay.counter}>{currentIndex + 1} / {featuredItems.length}</span>
+							</div>
+						)}
+					</div>
+				</SpottableDiv>
+			</div>
+		);
+	}
 
 	// With the peek row out of the way the compact card drops back to where it sits
 	// without a peek, so it covers less of the trailer.

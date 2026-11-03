@@ -1,0 +1,219 @@
+// EsPlay: the media bar as the showcase of the rows below at full size. The video rules are the
+// showcase's own (EsplayBrowseHero.module.less): no mask or opaque box over or under the video,
+// and each thing drawn on it in a layer of its own with a single gradient.
+
+.art {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 70%;
+	height: 100%;
+}
+
+.pictureFade {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	-webkit-mask-image: linear-gradient(90deg, transparent 0%, transparent 10%, rgba(0, 0, 0, 0.35) 28%, rgba(0, 0, 0, 0.75) 46%, #000 62%);
+	mask-image: linear-gradient(90deg, transparent 0%, transparent 10%, rgba(0, 0, 0, 0.35) 28%, rgba(0, 0, 0, 0.75) 46%, #000 62%);
+	transition: opacity 0.4s ease;
+}
+
+.picture {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+	-webkit-mask-image: linear-gradient(0deg, transparent 0%, transparent 6%, rgba(0, 0, 0, 0.5) 28%, #000 55%);
+	mask-image: linear-gradient(0deg, transparent 0%, transparent 6%, rgba(0, 0, 0, 0.5) 28%, #000 55%);
+}
+
+.video {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	pointer-events: none;
+
+	video {
+		position: absolute;
+		border: none;
+	}
+}
+
+.videoShade {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	-webkit-transform: translateZ(0);
+	transform: translateZ(0);
+}
+
+.shadeLeft {
+	background: linear-gradient(90deg, var(--theme-background, #030303) 0%, var(--theme-background, #030303) 10%, rgba(3, 3, 3, 0.65) 28%, rgba(3, 3, 3, 0.25) 46%, rgba(3, 3, 3, 0) 62%);
+}
+
+.shadeBottom {
+	background: linear-gradient(0deg, var(--theme-background, #030303) 0%, var(--theme-background, #030303) 6%, rgba(3, 3, 3, 0.5) 28%, rgba(3, 3, 3, 0) 55%);
+}
+
+.hidden {
+	opacity: 0;
+}
+
+.text {
+	position: absolute;
+	z-index: 1;
+	-webkit-transform: translateZ(0);
+	transform: translateZ(0);
+	left: 60px;
+	bottom: 70px;
+	width: 820px;
+}
+
+// The side menu's rail sits over the left edge, so the text starts where the rows do.
+.sidebar {
+	left: 110px;
+}
+
+.badges {
+	display: -webkit-flex;
+	display: flex;
+	-webkit-align-items: center;
+	align-items: center;
+	height: 36px;
+	margin-bottom: 18px;
+	transition: opacity 0.4s ease;
+}
+
+.newBadge {
+	background: #E71414;
+	color: #FFFFFF;
+	font-weight: 800;
+	font-size: 18px;
+	letter-spacing: 0.08em;
+	padding: 6px 12px;
+	border-radius: 6px;
+	margin-right: 14px;
+}
+
+.kind {
+	color: #C4C4CA;
+	font-size: 22px;
+	font-weight: 500;
+}
+
+.logo {
+	display: block;
+	max-width: 620px;
+	max-height: 200px;
+	object-fit: contain;
+	object-position: left bottom;
+}
+
+.title {
+	color: #FFFFFF;
+	font-size: 96px;
+	font-weight: 800;
+	line-height: 1;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+.details {
+	margin-top: 20px;
+	color: #C4C4CA;
+	font-size: 26px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.overview {
+	margin-top: 18px;
+	max-width: 780px;
+	max-height: 110px;
+	color: #A8A8B0;
+	font-size: 25px;
+	line-height: 1.45;
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	transition: opacity 0.4s ease, max-height 0.4s ease, margin-top 0.4s ease;
+}
+
+// Once the trailer shows, the text steps back to the title and the progress.
+.playing {
+	.badges {
+		opacity: 0;
+	}
+
+	.overview {
+		opacity: 0;
+		max-height: 0;
+		margin-top: 0;
+	}
+}
+
+.progress {
+	display: -webkit-flex;
+	display: flex;
+	-webkit-align-items: center;
+	align-items: center;
+	margin-top: 34px;
+}
+
+.segment {
+	width: 20px;
+	height: 6px;
+	border-radius: 3px;
+	margin-right: 8px;
+	background: rgba(255, 255, 255, 0.28);
+	overflow: hidden;
+}
+
+.current {
+	width: 64px;
+}
+
+.filling,
+.filled {
+	display: block;
+	height: 100%;
+	background: #E71414;
+}
+
+.filled {
+	width: 100%;
+}
+
+.filling {
+	width: 0;
+	-webkit-animation: esplayFill linear forwards;
+	animation: esplayFill linear forwards;
+}
+
+@-webkit-keyframes esplayFill {
+	from { width: 0; }
+	to { width: 100%; }
+}
+
+@keyframes esplayFill {
+	from { width: 0; }
+	to { width: 100%; }
+}
+
+.counter {
+	margin-left: 14px;
+	color: #8A8A92;
+	font-size: 20px;
+}

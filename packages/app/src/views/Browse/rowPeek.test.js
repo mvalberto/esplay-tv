@@ -13,7 +13,7 @@ const peek = (overrides, row = continueRow) => rowPeekHeight({...defaultSettings
 
 describe('rowPeekHeight', () => {
 	test('is zero when the setting is off, the bar has no peek or there is no row', () => {
-		expect(rowPeekHeight(defaultSettings, continueRow)).toBe(0);
+		expect(rowPeekHeight({...defaultSettings, mediaBarRowPeek: false}, continueRow)).toBe(0);
 		expect(peek({featuredBarStyle: 'banner'})).toBe(0);
 		expect(peek({featuredBarStyle: 'off'})).toBe(0);
 		expect(peek({}, null)).toBe(0);

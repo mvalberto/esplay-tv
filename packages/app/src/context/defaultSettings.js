@@ -155,7 +155,8 @@ export const defaultSettings = {
 	featuredContentType: 'both',
 	featuredItemCount: 10,
 	featuredBarStyle: 'moonfin',
-	mediaBarRowPeek: false,
+	// EsPlay: the first row shows along the bottom of the media bar, as on Prime Video.
+	mediaBarRowPeek: true,
 	featuredTrailerPreview: true,
 	featuredTrailerMuted: false,
 	trailerVolume: 100,
