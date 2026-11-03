@@ -28,7 +28,8 @@
 }
 
 // The picture fades out through masks. A Samsung or Fire TV only shows a video it can put on
-// its own hardware plane, which a mask keeps it off, so the video is shaded by a gradient on top.
+// its own hardware plane, which a mask keeps it off, and the Samsung drops anything partly
+// see-through over that plane, so the video is shaded by a dithered picture on top.
 .pictureFade {
 	position: absolute;
 	top: 0;
@@ -71,9 +72,9 @@
 	left: 0;
 	width: 100%;
 	height: 100%;
-	background:
-		linear-gradient(0deg, var(--theme-background, #0a0a0a) 0%, rgba(10, 10, 10, 0) 42%),
-		linear-gradient(90deg, var(--theme-background, #0a0a0a) 0%, rgba(10, 10, 10, 0.4) 22%, rgba(10, 10, 10, 0) 48%);
+	// Dithered by brand/shade.js, drawn at its own size so no pixel turns partly see-through.
+	background: url('./esplay-video-shade.png') left bottom no-repeat;
+	image-rendering: pixelated;
 }
 
 .hidden {
