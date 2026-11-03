@@ -28,8 +28,7 @@
 }
 
 // The picture fades out through masks. A Samsung or Fire TV only shows a video it can put on
-// its own hardware plane, which a mask keeps it off, and the Samsung drops anything partly
-// see-through over that plane, so the video gets no fade and fills the top from the rows' edge.
+// its own hardware plane, which a mask keeps it off, so the video is shaded from above instead.
 .pictureFade {
 	position: absolute;
 	top: 0;
@@ -53,8 +52,8 @@
 .video {
 	position: absolute;
 	top: 0;
-	left: 60px;
-	right: 0;
+	left: 0;
+	width: 100%;
 	height: 100%;
 	overflow: hidden;
 
@@ -66,13 +65,36 @@
 	}
 }
 
+// The page shows the video through a hole the engine clears in its own layer, which wipes out
+// anything painted there with it, so the shade and the text above it get layers of their own.
+// The Samsung only draws a single gradient over the video, so each edge is a layer apart.
+.videoShade {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	-webkit-transform: translateZ(0);
+	transform: translateZ(0);
+}
+
+.shadeLeft {
+	background: linear-gradient(90deg, var(--theme-background, #030303) 0%, var(--theme-background, #030303) 8%, rgba(3, 3, 3, 0.7) 26%, rgba(3, 3, 3, 0) 50%);
+}
+
+.shadeBottom {
+	background: linear-gradient(0deg, var(--theme-background, #030303) 0%, var(--theme-background, #030303) 6%, rgba(3, 3, 3, 0.6) 22%, rgba(3, 3, 3, 0) 46%);
+}
+
 .hidden {
 	opacity: 0;
 }
 
 .text {
 	position: absolute;
-	transition: opacity 0.4s ease;
+	z-index: 1;
+	-webkit-transform: translateZ(0);
+	transform: translateZ(0);
 	left: 60px;
 	bottom: 26px;
 	width: 46%;
