@@ -172,6 +172,9 @@ const whenSinceYouWatched = hasHomeRow((row) => row.id.startsWith('sinceyouwatch
 const whenRewatch = hasHomeRow((row) => row.id === 'rewatch');
 const whenRewatchEnabled = (ctx) => whenRewatch(ctx) && ctx.settings.displayRewatchRow !== false;
 const whenPlugin = (ctx) => ctx.settings.useMoonfinPlugin;
+// EsPlay: what the app keeps out of sight, the integrations, the media bar settings (EsPlay
+// has one), the external sources, the theme and the focus border color.
+const esplayHidden = () => false;
 const whenHdrSubtitles = (ctx) => ctx.settings.subtitleHdrSeparate;
 const whenSeerr = (ctx) => ctx.seerr.isEnabled;
 const whenScreensaver = (ctx) => ctx.settings.screensaverEnabled;
@@ -376,16 +379,17 @@ export const SETTINGS_SCHEMA = [
 					{kind: KIND.NAV, id: 'homeScreen', label: () => $L('Home Screen'), desc: () => $L('Rows, media bar, looks, and external sources'), icon: 'home', action: (ctx) => ctx.actions.openScreen('appearance', 'homeScreen', 'setting-homeScreen')},
 					{kind: KIND.NAV, id: 'libraries', label: () => $L('Libraries'), desc: () => $L('Library visibility, order, and library pages'), icon: 'video_library', action: (ctx) => ctx.actions.openScreen('appearance', 'libraries', 'setting-libraries')},
 					{kind: KIND.NAV, id: 'detailsPage', label: () => $L('Details Page'), desc: () => $L('Layout, buttons, sections, ratings, and theme music'), icon: 'article_outlined', action: (ctx) => ctx.actions.openScreen('appearance', 'detailsPage', 'setting-detailsPage')},
-					{kind: KIND.SECTION, id: 'theme', label: () => $L('Theme')},
+					{kind: KIND.SECTION, id: 'theme', label: () => $L('Theme'), when: esplayHidden},
 					{
 						kind: KIND.NAV,
 						id: 'themeSelection',
 						icon: 'palette_outlined',
 						label: () => $L('App Theme'),
 						desc: (ctx) => ctx.availableThemes.find((t) => t.id === ctx.activeThemeId)?.displayName || $L('Default'),
-						action: (ctx) => ctx.actions.openThemes()
+						action: (ctx) => ctx.actions.openThemes(),
+						when: esplayHidden
 					},
-					{kind: KIND.OPTION, key: 'focusBorderColor', label: () => $L('Focus Border Color'), options: getAccentColorOptions, fallback: () => $L('Theme Default'), icon: 'border_color'},
+					{kind: KIND.OPTION, key: 'focusBorderColor', label: () => $L('Focus Border Color'), options: getAccentColorOptions, fallback: () => $L('Theme Default'), icon: 'border_color', when: esplayHidden},
 					{kind: KIND.SECTION, id: 'display', label: () => $L('Display')},
 					{kind: KIND.TOGGLE, key: 'cardFocusZoom', label: () => $L('Focus Expansion Animation'), desc: () => $L('Scale focused or hovered cards and tiles'), icon: 'zoom_in'},
 					{kind: KIND.OPTION, key: 'uiScale', label: () => $L('UI Scaling'), options: getUiScaleOptions, fallback: () => $L('Default'), icon: 'zoom_out_map'},
@@ -431,7 +435,7 @@ export const SETTINGS_SCHEMA = [
 					{kind: KIND.SECTION, id: 'contents', label: () => $L('Contents')},
 					{kind: KIND.NAV, id: 'homeRows', label: () => $L('Rows'), desc: () => $L('Turn rows on or off and change their order'), icon: 'list', action: (ctx) => ctx.actions.openHomeRows()},
 					{kind: KIND.NAV, id: 'rowOptions', label: () => $L('Row Options'), desc: () => $L('Sorting and content for each row'), icon: 'tune', action: (ctx) => ctx.actions.openScreen('appearance', 'rowOptions', 'setting-rowOptions')},
-					{kind: KIND.NAV, id: 'mediaBar', label: () => $L('Media Bar'), desc: () => $L('Featured content, appearance'), icon: 'featured_play_list', action: (ctx) => ctx.actions.openScreen('appearance', 'mediaBar', 'setting-mediaBar')},
+					{kind: KIND.NAV, id: 'mediaBar', label: () => $L('Media Bar'), desc: () => $L('Featured content, appearance'), icon: 'featured_play_list', action: (ctx) => ctx.actions.openScreen('appearance', 'mediaBar', 'setting-mediaBar'), when: esplayHidden},
 					{kind: KIND.SECTION, id: 'looks', label: () => $L('Looks')},
 					{kind: KIND.OPTION, key: 'homeRowsStyle', label: () => $L('Row Type'), desc: () => $L('Classic keeps per-row image type and info overlay. Modern uses portrait-to-backdrop rows.'), options: getHomeRowsStyleOptions, fallback: () => $L('Modern'), icon: 'view_carousel'},
 					{kind: KIND.TOGGLE, key: 'modernCardsOnMyMediaRow', label: () => $L('Modern cards on My Media row'), desc: () => $L('Display customizable posters that expand on focus. Disable to always show landscape thumbnail.'), icon: 'photo_library_outlined', when: (ctx) => ctx.settings.homeRowsStyle !== 'v1'},
@@ -469,12 +473,12 @@ export const SETTINGS_SCHEMA = [
 					},
 					{kind: KIND.TOGGLE, key: 'hideHomeMediaDescription', label: () => $L('Hide Media Description'), desc: () => $L('Hide the movie or episode descriptive text.'), icon: 'description_outlined'},
 					...ratingsRows('homeRows'),
-					{kind: KIND.SECTION, id: 'externalSources', label: () => $L('External Sources'), when: whenPlugin},
-					{kind: KIND.NAV, id: 'imdbLists', label: () => $L('IMDb Lists'), desc: () => $L('Configure IMDb Top 250, Popular, and other charts.'), icon: 'movie_outlined', keywords: () => [$L('IMDb Row Sorting'), $L('Sort Order')], action: (ctx) => ctx.actions.openImdbLists(), when: whenPlugin},
-					{kind: KIND.NAV, id: 'externalTmdbLists', label: () => $L('TMDB Lists'), desc: () => $L('Configure Popular, Top Rated, and Trending TMDB lists.'), icon: 'trending_up', keywords: () => [$L('TMDB Row Sorting'), $L('Sort Order')], action: (ctx) => ctx.actions.openExternalTmdbLists(), when: whenPlugin},
-					{kind: KIND.NAV, id: 'seasonalRow', label: () => $L('Seasonal Row'), desc: () => $L('Show a row of holiday movies from your library, with Seerr suggestions when available.'), icon: 'celebration_outlined', keywords: () => ['holiday', 'christmas', 'halloween', 'seasonal'], action: (ctx) => ctx.actions.openSeasonalRow(), when: whenPlugin},
-					{kind: KIND.NAV, id: 'externalCalendars', label: () => $L('Upcoming Calendars'), desc: () => $L('Toggle Upcoming Calendars from Radarr/Sonarr.'), icon: 'calendar_month', action: (ctx) => ctx.actions.openExternalCalendars(), when: (ctx) => whenPlugin(ctx) && whenSeerr(ctx)},
-					{kind: KIND.NAV, id: 'seerrHomeRows', label: (ctx) => `${ctx.seerrLabel} ${$L('Rows')}`, desc: () => $L('Configure Seerr Discovery Rows.'), icon: 'list', keywords: () => [$L('Seerr Row Sorting'), $L('Sort Order')], action: (ctx) => ctx.actions.openSeerrHomeRows(), when: (ctx) => whenPlugin(ctx) && whenSeerr(ctx)},
+					{kind: KIND.SECTION, id: 'externalSources', label: () => $L('External Sources'), when: esplayHidden},
+					{kind: KIND.NAV, id: 'imdbLists', label: () => $L('IMDb Lists'), desc: () => $L('Configure IMDb Top 250, Popular, and other charts.'), icon: 'movie_outlined', keywords: () => [$L('IMDb Row Sorting'), $L('Sort Order')], action: (ctx) => ctx.actions.openImdbLists(), when: esplayHidden},
+					{kind: KIND.NAV, id: 'externalTmdbLists', label: () => $L('TMDB Lists'), desc: () => $L('Configure Popular, Top Rated, and Trending TMDB lists.'), icon: 'trending_up', keywords: () => [$L('TMDB Row Sorting'), $L('Sort Order')], action: (ctx) => ctx.actions.openExternalTmdbLists(), when: esplayHidden},
+					{kind: KIND.NAV, id: 'seasonalRow', label: () => $L('Seasonal Row'), desc: () => $L('Show a row of holiday movies from your library, with Seerr suggestions when available.'), icon: 'celebration_outlined', keywords: () => ['holiday', 'christmas', 'halloween', 'seasonal'], action: (ctx) => ctx.actions.openSeasonalRow(), when: esplayHidden},
+					{kind: KIND.NAV, id: 'externalCalendars', label: () => $L('Upcoming Calendars'), desc: () => $L('Toggle Upcoming Calendars from Radarr/Sonarr.'), icon: 'calendar_month', action: (ctx) => ctx.actions.openExternalCalendars(), when: esplayHidden},
+					{kind: KIND.NAV, id: 'seerrHomeRows', label: (ctx) => `${ctx.seerrLabel} ${$L('Rows')}`, desc: () => $L('Configure Seerr Discovery Rows.'), icon: 'list', keywords: () => [$L('Seerr Row Sorting'), $L('Sort Order')], action: (ctx) => ctx.actions.openSeerrHomeRows(), when: esplayHidden},
 					{
 						kind: KIND.NAV,
 						id: 'externalCustomRows',
@@ -482,7 +486,7 @@ export const SETTINGS_SCHEMA = [
 						desc: (ctx) => $L('{count} configured').replace('{count}', String((ctx.settings.customHomeRows || []).length)),
 						icon: 'tune_outlined',
 						action: (ctx) => ctx.actions.openExternalCustomRows(),
-						when: whenPlugin
+						when: esplayHidden
 					}
 				]
 			},
@@ -547,6 +551,7 @@ export const SETTINGS_SCHEMA = [
 				clean: true,
 				icon: 'featured_play_list',
 				menu: false,
+				when: esplayHidden,
 				parent: 'homeScreen',
 				label: () => $L('Media Bar'),
 				description: () => $L('Featured content, appearance'),
@@ -1041,7 +1046,7 @@ export const SETTINGS_SCHEMA = [
 		clean: true,
 		// A list of what's on offer even when only one thing is
 		alwaysMenu: true,
-		when: (ctx) => !ctx.settings.kidsModeEnabled,
+		when: esplayHidden,
 		label: () => $L('Integrations'),
 		description: () => $L('Seerr and Achievement Badges'),
 		icon: 'hub',
