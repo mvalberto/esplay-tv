@@ -1,0 +1,249 @@
+// EsPlay live TV cards: the brand's dark greys and red whatever the theme, like the phone app.
+// Flex is written with its -webkit- forms for the older Samsung sets.
+
+.card {
+	-webkit-flex: 0 0 auto;
+	flex: 0 0 auto;
+	cursor: pointer;
+	outline: none;
+	position: relative;
+	text-align: left;
+	-webkit-transition: width 0.25s ease-out;
+	transition: width 0.25s ease-out;
+}
+
+.focused,
+.card:focus {
+	z-index: 12;
+}
+
+.frame {
+	position: relative;
+	overflow: hidden;
+	border-radius: 16px;
+	border: 4px solid transparent;
+	box-sizing: border-box;
+	background: #1C1C20;
+}
+
+.card:focus .frame {
+	border-color: #FFFFFF;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+
+	:global(.perf-low) &,
+	:global(.perf-mid) & {
+		box-shadow: none;
+	}
+}
+
+.art {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+// A channel logo is shown whole, centred, and at rest only on its own: open, it sits to the right
+// of the text.
+.logo {
+	position: absolute;
+	top: 18%;
+	left: 12%;
+	width: 76%;
+	height: 64%;
+	object-fit: contain;
+}
+
+.focused .logo {
+	left: 56%;
+	width: 38%;
+}
+
+.channelName {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	padding: 0 18px;
+	display: -webkit-flex;
+	display: flex;
+	-webkit-align-items: center;
+	align-items: center;
+	-webkit-justify-content: center;
+	justify-content: center;
+	text-align: center;
+	color: #FFFFFF;
+	font-size: 32px;
+	font-weight: 800;
+	line-height: 1.15;
+	word-break: break-word;
+}
+
+.focused .channelName {
+	display: none;
+}
+
+.liveBadge {
+	display: inline-block;
+	background: #E71414;
+	color: #FFFFFF;
+	font-size: 16px;
+	font-weight: 800;
+	letter-spacing: 0.5px;
+	padding: 5px 10px;
+	border-radius: 6px;
+	line-height: 1.2;
+}
+
+.cornerBadge {
+	position: absolute;
+	top: 12px;
+	left: 12px;
+}
+
+.edgeProgress {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 6px;
+	background: rgba(255, 255, 255, 0.18);
+}
+
+.progressFill {
+	height: 100%;
+	background: #E71414;
+}
+
+// The open card: the picture on the right, fading into the dark behind the text.
+.showcase {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	padding: 26px 28px;
+	box-sizing: border-box;
+	display: -webkit-flex;
+	display: flex;
+	-webkit-flex-direction: column;
+	flex-direction: column;
+	-webkit-justify-content: flex-end;
+	justify-content: flex-end;
+	background:
+		linear-gradient(90deg, rgba(14, 14, 16, 0.94) 0%, rgba(14, 14, 16, 0.75) 45%, rgba(14, 14, 16, 0) 80%),
+		linear-gradient(0deg, rgba(14, 14, 16, 0.85) 0%, rgba(14, 14, 16, 0) 55%);
+}
+
+.badges {
+	display: -webkit-flex;
+	display: flex;
+	-webkit-align-items: center;
+	align-items: center;
+	margin-bottom: 14px;
+}
+
+.channelChip {
+	margin-left: 10px;
+	background: rgba(38, 38, 43, 0.9);
+	color: #FFFFFF;
+	font-size: 18px;
+	font-weight: 800;
+	padding: 5px 12px;
+	border-radius: 6px;
+	line-height: 1.2;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 300px;
+}
+
+.showTitle {
+	max-width: 62%;
+	color: #FFFFFF;
+	font-size: 36px;
+	font-weight: 800;
+	line-height: 1.1;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+.showTime {
+	margin-top: 10px;
+	color: #C4C4CA;
+	font-size: 20px;
+}
+
+.showProgress {
+	margin-top: 12px;
+	width: 55%;
+	height: 6px;
+	border-radius: 3px;
+	overflow: hidden;
+	background: rgba(255, 255, 255, 0.18);
+}
+
+.overview {
+	margin-top: 12px;
+	max-width: 62%;
+	color: #A8A8B0;
+	font-size: 18px;
+	line-height: 1.35;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+// A channel tag, or the live TV page itself: the number in red over the name.
+.tile {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	padding: 22px 22px 26px;
+	box-sizing: border-box;
+	display: -webkit-flex;
+	display: flex;
+	-webkit-flex-direction: column;
+	flex-direction: column;
+	-webkit-justify-content: space-between;
+	justify-content: space-between;
+}
+
+.tagNumber {
+	color: #E71414;
+	font-size: 64px;
+	font-weight: 900;
+	line-height: 1;
+}
+
+.tagName {
+	color: #FFFFFF;
+	font-size: 26px;
+	font-weight: 800;
+	line-height: 1.2;
+	word-break: break-word;
+}
+
+.tvIcon {
+	width: 80px;
+	height: 70px;
+}
+
+.title {
+	margin-top: 8px;
+	font-size: 22px;
+	font-weight: 600;
+	color: #FFFFFF;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	line-height: 1.2;
+}

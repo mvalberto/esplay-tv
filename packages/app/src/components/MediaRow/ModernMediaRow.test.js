@@ -27,6 +27,7 @@ jest.mock('../MediaCard/ModernMediaCard', () => {
 	const React = require('react');
 	return ({item, spotlightId}) => React.createElement('div', {className: 'spottable', tabIndex: -1, 'data-spotlight-id': spotlightId}, item.Name);
 });
+jest.mock('../MediaCard/EsplayLiveCard', () => () => null);
 
 const items = Array.from({length: 6}, (_, i) => ({Id: `item${i}`, Name: `Title ${i}`}));
 

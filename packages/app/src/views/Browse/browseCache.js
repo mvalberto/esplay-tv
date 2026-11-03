@@ -146,7 +146,14 @@ const stripItemForCache = (item) => ({
 	_serverId: item._serverId,
 	isLibraryTile: item.isLibraryTile,
 	isRecordingsShortcut: item.isRecordingsShortcut,
-	esplayTagId: item.esplayTagId
+	esplayTagId: item.esplayTagId,
+	// A live program tunes its channel and shows its logo and progress.
+	ChannelId: item.ChannelId,
+	ChannelName: item.ChannelName,
+	ChannelNumber: item.ChannelNumber,
+	ChannelPrimaryImageTag: item.ChannelPrimaryImageTag,
+	StartDate: item.StartDate,
+	EndDate: item.EndDate
 });
 
 // Enough of the rows to tell whether a write is worth making. Resume and Next Up also fold in

@@ -522,6 +522,41 @@ const publishUserData = (itemId, patch) => (response) => {
 // progress bar under a watched mark.
 const playedUserData = (played) => ({Played: played, PlayedPercentage: null, PlaybackPositionTicks: 0});
 
+// EsPlay: what airs now in channel order, like Emby's own apps. The recommended list ranks it
+// by what each user watches most. Each program brings its channel's name, number and logo, and
+// more channels are asked for than shown since some have no guide.
+const airingInChannelOrder = async (limit) => {
+	const result = await request(`/LiveTv/Channels?UserId=${currentUser}&AddCurrentProgram=true&EnableImageTypes=Primary&ImageTypeLimit=1&EnableTotalRecordCount=false&Limit=${limit * 4}`);
+	const Items = [];
+	for (const channel of result?.Items || []) {
+		const program = channel.CurrentProgram;
+		if (!program) continue;
+		Items.push({
+			...program,
+			ChannelId: program.ChannelId || channel.Id,
+			ChannelName: program.ChannelName || channel.Name,
+			ChannelNumber: program.ChannelNumber || channel.ChannelNumber,
+			ChannelPrimaryImageTag: program.ChannelPrimaryImageTag || channel.ImageTags?.Primary
+		});
+		if (Items.length >= limit) break;
+	}
+	return {Items, TotalRecordCount: Items.length};
+};
+
+// EsPlay: the tags are named "01 TDT|AUTONÓMICOS", "03 CHAMPIONS"..., and the server does not
+// return them in that order. Ones without a number go last, by name.
+const tagNumber = (tag) => {
+	const match = /^(\d+)/.exec(tag?.Name || '');
+	return match ? parseInt(match[1], 10) : Infinity;
+};
+const sortTagsByNumber = (result) => {
+	const items = Array.isArray(result) ? result : result?.Items;
+	if (Array.isArray(items)) {
+		items.sort((a, b) => (tagNumber(a) - tagNumber(b)) || (a?.Name || '').localeCompare(b?.Name || ''));
+	}
+	return result;
+};
+
 export const api = {
 	getPublicInfo: () => request('/System/Info/Public'),
 
@@ -857,16 +892,14 @@ export const api = {
 	getLiveTvProgram: (programId) =>
 		request(`/LiveTv/Programs/${programId}?UserId=${currentUser}`),
 
-	getLiveTvAiringPrograms: (limit) =>
-		request(`/LiveTv/Programs/Recommended?UserId=${currentUser}&IsAiring=true&Limit=${limit}`),
+	getLiveTvAiringPrograms: (limit) => airingInChannelOrder(limit),
 
 	// EsPlay: Emby's channel tags, what airs now with each program's channel name and
 	// logo, a tag's channels with their current program, and one channel's schedule.
 	getLiveTvChannelTags: () =>
-		request(`/LiveTv/ChannelTags?UserId=${currentUser}`),
+		request(`/LiveTv/ChannelTags?UserId=${currentUser}`).then(sortTagsByNumber),
 
-	getLiveTvAiringWithChannels: (limit) =>
-		request(`/LiveTv/Programs/Recommended?UserId=${currentUser}&IsAiring=true&Limit=${limit}&Fields=ChannelInfo&EnableImages=true`),
+	getLiveTvAiringWithChannels: (limit) => airingInChannelOrder(limit),
 
 	// A limit keeps a Home row to its first channels; a tag can hold hundreds.
 	getLiveTvChannelsWithTag: (tagId, limit) =>

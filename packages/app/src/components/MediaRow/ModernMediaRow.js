@@ -2,6 +2,8 @@ import {useCallback, useRef, useEffect, useState, memo} from 'react';
 import SpotlightContainerDecorator from '@enact/spotlight/SpotlightContainerDecorator';
 import Spotlight from '@enact/spotlight';
 import ModernMediaCard from '../MediaCard/ModernMediaCard';
+import EsplayLiveCard from '../MediaCard/EsplayLiveCard';
+import {isLiveTvProgram} from '../../utils/liveTvLibrary';
 import {KEYS} from '../../utils/keys';
 import {sameCardUserData} from '../../utils/playedState';
 import {useSettings} from '../../context/SettingsContext';
@@ -237,8 +239,10 @@ const ModernMediaRow = ({
 						const besideFocus = focusedIndex >= 0 && Math.abs(index - focusedIndex) === 1;
 						const isFirst = index === 0;
 						const isLast = index === items.length - 1;
+						// EsPlay: live programs and the live TV row get cards of their own.
+						const Card = rowId === 'livetv' || isLiveTvProgram(item) ? EsplayLiveCard : ModernMediaCard;
 						return (
-							<ModernMediaCard
+							<Card
 								key={`${keyPrefix}-${item.Id}-${index}`}
 								item={item}
 								serverUrl={serverUrl}
