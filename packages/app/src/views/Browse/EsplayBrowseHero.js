@@ -7,7 +7,8 @@ import css from './EsplayBrowseHero.module.less';
 
 // EsPlay: the top of Home while the rows have focus, as the live TV showcase. The title under
 // the remote shows its picture on the right, fading into the dark behind its text, and when it
-// has a preview the video plays there instead of inside the card.
+// has a preview the video plays across the whole top instead of inside the card, its text
+// giving way, as the card below already carries it.
 
 const PREVIEW_KEY = 'esplay-hero';
 // Focus crossing a row quickly only redraws the top once it rests.
@@ -59,10 +60,9 @@ const MediaHero = ({item, serverUrl, phase, frameRef}) => {
 						<img key={picture} className={css.picture} src={picture} alt="" onError={onPictureError} />
 					</div>
 				)}
-				<div ref={frameRef} className={`${css.video} ${playing ? '' : css.hidden}`} />
-				{playing && <div className={css.videoShade} />}
 			</div>
-			<div className={css.text}>
+			<div ref={frameRef} className={`${css.video} ${playing ? '' : css.hidden}`} />
+			<div className={`${css.text} ${playing ? css.hidden : ''}`}>
 				{logo && !failed[logo] ? (
 					<img key={logo} className={css.logo} src={logo} alt={title} onError={onLogoError} />
 				) : (
