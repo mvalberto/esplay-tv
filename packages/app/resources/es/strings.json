@@ -2834,5 +2834,9 @@
     "This tag has no channels.": "Esta etiqueta no tiene canales.",
     "This server has no channel tags yet.": "Este servidor todavía no tiene etiquetas de canales.",
     "OK cancels the recording": "OK cancela la grabación",
-    "OK records this program": "OK graba este programa"
+    "OK records this program": "OK graba este programa",
+    "As on the server": "Como en el servidor",
+    "Ending soonest": "Lo que acaba antes",
+    "Smaller": "Más pequeño",
+    "Bigger": "Más grande"
 }

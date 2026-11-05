@@ -1,9 +1,10 @@
-import {memo, useState, useEffect, useCallback, useRef} from 'react';
+import {memo, useState, useEffect, useCallback, useMemo, useRef} from 'react';
 import Spottable from '@enact/spotlight/Spottable';
 import SpotlightContainerDecorator from '@enact/spotlight/SpotlightContainerDecorator';
 import Spotlight from '@enact/spotlight';
 import $L from '@enact/i18n/$L';
 import {useAuth} from '../../context/AuthContext';
+import {useSettings} from '../../context/SettingsContext';
 import {getImageUrl} from '../../utils/helpers';
 import LiveTV from '../LiveTV';
 import {takePendingLiveTv} from '../../esplay/liveTvIntent';
@@ -23,6 +24,54 @@ const Section = SpotlightContainerDecorator({enterTo: 'last-focused'}, 'div');
 const ROW_SIZE = 20;
 const GRID_PAGE = 40;
 const RAIL_SETTLE_MS = 350;
+
+// The Tags grid's sizes, smallest first: columns and the height of a card's art.
+const GRID_SIZES = [{columns: 6, art: 100}, {columns: 5, art: 124}, {columns: 4, art: 158}, {columns: 3, art: 215}];
+const DEFAULT_GRID_SIZE = 2;
+const SORTS = ['server', 'number', 'name', 'endsSoon', 'favorites'];
+const sortLabel = (sort) => ({
+	number: $L('Channel number'),
+	name: $L('Name'),
+	endsSoon: $L('Ending soonest'),
+	favorites: $L('Favorites first')
+}[sort] || $L('As on the server'));
+
+/** Channels without a number go last. */
+const channelNumber = (channel) => {
+	const n = parseFloat(String(channel.ChannelNumber || channel.Number || '').trim());
+	return isNaN(n) ? Infinity : n;
+};
+
+/** The name without its country prefix (|ES|, ES-AV|, [ES-P]...), so AMC sorts under A whatever feed it is. */
+const sortName = (channel) => (channel.Name || '')
+	.replace(/^\s*[[|]?[A-Za-z]{2}(-[A-Za-z]+)?[\]|]\s*/, '')
+	.trim()
+	.toLowerCase();
+
+const minutesLeft = (channel) => {
+	const raw = channel.CurrentProgram && channel.CurrentProgram.EndDate;
+	return raw ? new Date(raw) - Date.now() : Infinity;
+};
+
+/** The channels in the chosen order; ties keep the server's order. */
+const sortChannels = (channels, sort) => {
+	if (!channels || sort === 'server') return channels;
+	const compare = {
+		number: (a, b) => channelNumber(a) - channelNumber(b),
+		name: (a, b) => (sortName(a) < sortName(b) ? -1 : sortName(a) > sortName(b) ? 1 : 0),
+		endsSoon: (a, b) => {
+			const left = minutesLeft(a);
+			const right = minutesLeft(b);
+			return left === right ? 0 : left < right ? -1 : 1;
+		},
+		favorites: (a, b) => Number(Boolean(b.UserData && b.UserData.IsFavorite)) - Number(Boolean(a.UserData && a.UserData.IsFavorite))
+	}[sort];
+	if (!compare) return channels;
+	return channels
+		.map((channel, index) => ({channel, index}))
+		.sort((a, b) => compare(a.channel, b.channel) || a.index - b.index)
+		.map((entry) => entry.channel);
+};
 
 /** True once the element comes within a few rows of the visible part of the scroller. */
 const useNearScreen = (scrollerRef) => {
@@ -94,13 +143,13 @@ const currentProgram = (channel) => {
 };
 
 /** A channel tile: its logo with progress, its name and what it airs. */
-const ChannelCard = memo(({serverUrl, channel, index, onSelect, onFocusIndex, spotlightId}) => {
+const ChannelCard = memo(({serverUrl, channel, index, onSelect, onFocusIndex, spotlightId, style, artStyle}) => {
 	const now = currentProgram(channel);
 	const handleClick = useCallback(() => onSelect(channel), [channel, onSelect]);
 	const handleFocus = useCallback(() => onFocusIndex && onFocusIndex(index), [index, onFocusIndex]);
 	return (
-		<SpottableDiv className={css.channelCard} onClick={handleClick} onFocus={handleFocus} data-spotlight-id={spotlightId}>
-			<div className={css.channelArt}>
+		<SpottableDiv className={css.channelCard} style={style} onClick={handleClick} onFocus={handleFocus} data-spotlight-id={spotlightId}>
+			<div className={css.channelArt} style={artStyle}>
 				<ChannelLogo serverUrl={serverUrl} channelId={channel.Id} tag={channel.ImageTags && channel.ImageTags.Primary} name={channel.Name} />
 				{now && <ProgressBar value={progressOf(now.start, now.end)} />}
 			</div>
@@ -555,10 +604,26 @@ const EsplayLiveTV = ({onPlayChannel, onRecordings, backHandlerRef}) => {
 
 /** The tags down the left; the focused tag's channels in a grid on the right. */
 const TagsView = ({serverUrl, tags, selected, onSelectTag, loadChannels, onSelectChannel}) => {
-	const [channels, setChannels] = useState(null);
+	const [loaded, setChannels] = useState(null);
 	const [shown, setShown] = useState(GRID_PAGE);
 	const settleTimer = useRef(null);
+	const {settings, updateSetting} = useSettings();
+	const sort = SORTS.indexOf(settings.esplayTagChannelsSort) >= 0 ? settings.esplayTagChannelsSort : 'server';
+	const sizeIndex = GRID_SIZES[settings.esplayTagChannelsGridSize] ? settings.esplayTagChannelsGridSize : DEFAULT_GRID_SIZE;
+	const size = GRID_SIZES[sizeIndex];
+	const channels = useMemo(() => sortChannels(loaded, sort), [loaded, sort]);
+	const cardStyle = useMemo(() => ({width: (100 / size.columns - 2) + '%'}), [size]);
+	const artStyle = useMemo(() => ({height: size.art + 'px'}), [size]);
 	const handleSelectChannel = useCallback((channel) => onSelectChannel(channel, channels), [channels, onSelectChannel]);
+	const handleSort = useCallback(() => {
+		updateSetting('esplayTagChannelsSort', SORTS[(SORTS.indexOf(sort) + 1) % SORTS.length]);
+	}, [sort, updateSetting]);
+	const handleSmaller = useCallback(() => {
+		if (sizeIndex > 0) updateSetting('esplayTagChannelsGridSize', sizeIndex - 1);
+	}, [sizeIndex, updateSetting]);
+	const handleBigger = useCallback(() => {
+		if (sizeIndex < GRID_SIZES.length - 1) updateSetting('esplayTagChannelsGridSize', sizeIndex + 1);
+	}, [sizeIndex, updateSetting]);
 	useEffect(() => {
 		if (!selected) return undefined;
 		let alive = true;
@@ -602,7 +667,16 @@ const TagsView = ({serverUrl, tags, selected, onSelectTag, loadChannels, onSelec
 				))}
 			</Section>
 			<div className={css.tagChannels}>
-				{selected && <TagName name={selected.Name} className={css.tagHeading} />}
+				<div className={css.tagHeader}>
+					{selected && <TagName name={selected.Name} className={css.tagHeading} />}
+					<Section className={css.gridControls}>
+						<SpottableDiv className={css.chip} onClick={handleSort}>
+							{$L('Sort')}: {sortLabel(sort)}
+						</SpottableDiv>
+						<SpottableDiv className={sizeIndex > 0 ? css.chip : css.chipDisabled} onClick={handleSmaller} aria-label={$L('Smaller')}>−</SpottableDiv>
+						<SpottableDiv className={sizeIndex < GRID_SIZES.length - 1 ? css.chip : css.chipDisabled} onClick={handleBigger} aria-label={$L('Bigger')}>+</SpottableDiv>
+					</Section>
+				</div>
 				<Section className={css.grid}>
 					{channels && channels.length === 0 && <div className={css.empty}>{$L('This tag has no channels.')}</div>}
 					{(channels || []).slice(0, shown).map((channel, index) => (
@@ -613,6 +687,8 @@ const TagsView = ({serverUrl, tags, selected, onSelectTag, loadChannels, onSelec
 							index={index}
 							onSelect={handleSelectChannel}
 							onFocusIndex={handleCardFocus}
+							style={cardStyle}
+							artStyle={artStyle}
 						/>
 					))}
 				</Section>

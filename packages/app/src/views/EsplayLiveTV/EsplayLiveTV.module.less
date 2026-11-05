@@ -292,11 +292,33 @@ overflow-y: auto;
 padding-bottom: 60px;
 }
 
+.tagHeader {
+display: -webkit-flex;
+display: flex;
+-webkit-align-items: center;
+align-items: center;
+-webkit-justify-content: space-between;
+justify-content: space-between;
+margin: 4px 0 16px;
+}
+
 .tagHeading {
 display: block;
-margin: 4px 0 16px;
 font-size: 30px;
 font-weight: 700;
+}
+
+.gridControls {
+display: -webkit-flex;
+display: flex;
+-webkit-flex-shrink: 0;
+flex-shrink: 0;
+padding: 4px;
+}
+
+.chipDisabled {
+.chip();
+color: #52525B;
 }
 
 .grid {
