@@ -84,22 +84,35 @@
 	}
 }
 
-// EsPlay: the logo's slanted button, empty, with a red band running through it.
+// EsPlay: the logo's split play, opening and closing along its cut.
 .esplayButton {
 	display: block;
 	overflow: visible;
 }
 
-.esplaySweep {
-	animation: esplaySweep 1.3s ease-in-out infinite;
+.esplayTop {
+	animation: esplayTop 1.3s ease-in-out infinite;
 }
 
-@keyframes esplaySweep {
-	from {
-		transform: translateX(0);
+.esplayBottom {
+	animation: esplayBottom 1.3s ease-in-out infinite;
+}
+
+@keyframes esplayTop {
+	0%, 100% {
+		transform: translate(0, 0);
 	}
-	to {
-		transform: translateX(170px);
+	50% {
+		transform: translate(6px, -6px);
+	}
+}
+
+@keyframes esplayBottom {
+	0%, 100% {
+		transform: translate(0, 0);
+	}
+	50% {
+		transform: translate(-3px, 2px);
 	}
 }
 

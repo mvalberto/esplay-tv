@@ -1,28 +1,36 @@
 import css from './LoadingAnimation.module.less';
 
-// EsPlay shows the slanted button of its logo instead of the Moonfin moon: empty, with a red
-// band running through it, once every 1.3 seconds at full speed.
+// EsPlay shows its logo's split play instead of the Moonfin moon: the white top half and the red
+// bottom half move apart along the cut and back, once every 1.3 seconds at full speed.
+const PLAY = 'M30 22 L30 78 L80 50 Z';
+
 const MoonfinLogoAnimation = ({size, speed}) => {
 	const duration = Math.round(1300 / speed) + 'ms';
+	const timing = {WebkitAnimationDuration: duration, animationDuration: duration};
+	const width = Math.round(size * 0.6);
 
 	return (
-		<svg className={css.esplayButton} width={size} height={Math.round(size * 44 / 124)} viewBox="-2 0 124 44" aria-hidden="true">
+		<svg className={css.esplayButton} width={width} height={Math.round(width * 72 / 90)} viewBox="0 14 90 72" aria-hidden="true">
 			<defs>
-				<clipPath id="esplay-button-clip">
-					<rect x="2" y="2" width="116" height="40" rx="9" />
+				<clipPath id="esplay-split-top">
+					<polygon points="0,0 100,0 100,46 0,58" />
+				</clipPath>
+				<clipPath id="esplay-split-bottom">
+					<polygon points="0,58 100,46 100,100 0,100" />
 				</clipPath>
 			</defs>
-			<g transform="translate(4 0) skewX(-10)">
-				<rect x="2" y="2" width="116" height="40" rx="9" fill="rgba(255,255,255,.08)" />
-				<g clipPath="url(#esplay-button-clip)">
-					<rect
-						className={css.esplaySweep}
-						x="-50" y="2" width="50" height="40" fill="#E71414"
-						style={{WebkitAnimationDuration: duration, animationDuration: duration}}
-					/>
+			<line x1="4" y1="58.5" x2="22" y2="56.3" stroke="#FFFFFF" strokeWidth="3.2" strokeLinecap="round" strokeOpacity="0.9" />
+			<g className={css.esplayBottom} style={timing}>
+				<g clipPath="url(#esplay-split-bottom)">
+					<path d={PLAY} fill="#E71414" stroke="#E71414" strokeWidth="7" strokeLinejoin="round" />
 				</g>
-				<rect x="2" y="2" width="116" height="40" rx="9" fill="none" stroke="rgba(255,255,255,.22)" strokeWidth="2" />
-				<path d="M90 15 L90 29 L102 22 Z" fill="#FFFFFF" stroke="#FFFFFF" strokeWidth="3" strokeLinejoin="round" />
+			</g>
+			<g transform="translate(4 -2.4)">
+				<g className={css.esplayTop} style={timing}>
+					<g clipPath="url(#esplay-split-top)">
+						<path d={PLAY} fill="#FFFFFF" stroke="#FFFFFF" strokeWidth="7" strokeLinejoin="round" />
+					</g>
+				</g>
 			</g>
 		</svg>
 	);
