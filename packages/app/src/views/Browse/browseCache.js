@@ -147,6 +147,7 @@ const stripItemForCache = (item) => ({
 	isLibraryTile: item.isLibraryTile,
 	isRecordingsShortcut: item.isRecordingsShortcut,
 	esplayTagId: item.esplayTagId,
+	esplayTagThumb: item.esplayTagThumb,
 	// A live program tunes its channel and shows its logo and progress.
 	ChannelId: item.ChannelId,
 	ChannelName: item.ChannelName,

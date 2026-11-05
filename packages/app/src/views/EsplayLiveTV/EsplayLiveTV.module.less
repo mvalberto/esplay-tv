@@ -276,6 +276,32 @@ border-color: @focus;
 }
 }
 
+.railItem,
+.railItemSelected {
+display: -webkit-flex;
+display: flex;
+-webkit-align-items: center;
+align-items: center;
+}
+
+.railThumb {
+width: 56px;
+height: 32px;
+margin-right: 14px;
+border-radius: 5px;
+-webkit-flex-shrink: 0;
+flex-shrink: 0;
+object-fit: cover;
+}
+
+.railName {
+-webkit-flex: 1;
+flex: 1;
+min-width: 0;
+overflow: hidden;
+text-overflow: ellipsis;
+}
+
 .railItemSelected {
 background: #fff;
 color: #000;
@@ -300,6 +326,41 @@ align-items: center;
 -webkit-justify-content: space-between;
 justify-content: space-between;
 margin: 4px 0 16px;
+}
+
+// A tag with a picture: the picture as a strip behind the heading, darker on
+// the left where the name sits. One gradient on its own layer above it.
+.tagHeaderArt {
+.tagHeader();
+position: relative;
+height: 140px;
+padding: 0 28px;
+border-radius: 14px;
+overflow: hidden;
+&::before {
+content: '';
+position: absolute;
+top: 0;
+left: 0;
+right: 0;
+bottom: 0;
+z-index: 1;
+background: linear-gradient(to right, rgba(0, 0, 0, .9), rgba(0, 0, 0, .4));
+}
+.tagHeading,
+.gridControls {
+position: relative;
+z-index: 2;
+}
+}
+
+.tagHeaderImage {
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+object-fit: cover;
 }
 
 .tagHeading {

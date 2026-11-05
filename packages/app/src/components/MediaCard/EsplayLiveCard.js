@@ -157,10 +157,19 @@ const EsplayLiveCard = ({
 		);
 	} else if (item?.esplayTagId) {
 		art = (
-			<div className={css.tile}>
+			<>
+				{item.esplayTagThumb && (
+					<img
+						className={css.art}
+						src={getImageUrl(itemServerUrl, item.esplayTagId, 'Thumb', {tag: item.esplayTagThumb, maxWidth: 480, quality: 80})}
+						alt=""
+					/>
+				)}
+				<div className={item.esplayTagThumb ? css.tileOnArt : css.tile}>
 				{tagMatch && <span className={css.tagNumber}>{tagMatch[1]}</span>}
 				<span className={css.tagName}>{tagMatch ? tagMatch[2] : item.Name}</span>
-			</div>
+				</div>
+			</>
 		);
 	} else {
 		art = (

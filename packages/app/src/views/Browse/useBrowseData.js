@@ -507,7 +507,8 @@ const useBrowseData = ({
 									ImageTags: {},
 									BackdropImageTags: [],
 									isLibraryTile: true,
-									esplayTagId: tag.Id
+									esplayTagId: tag.Id,
+									esplayTagThumb: tag.ImageTags && tag.ImageTags.Thumb
 								}))
 							],
 							type: 'landscape',

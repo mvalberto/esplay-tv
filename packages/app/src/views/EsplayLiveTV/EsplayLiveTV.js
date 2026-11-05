@@ -226,16 +226,20 @@ const TagChip = ({tag, onOpen}) => {
 	);
 };
 
-const RailItem = ({tag, selected, onSelect, onFocusTag}) => {
+const tagThumb = (tag) => tag && tag.ImageTags && tag.ImageTags.Thumb;
+
+const RailItem = ({serverUrl, tag, selected, onSelect, onFocusTag}) => {
 	const handleSelect = useCallback(() => onSelect(tag), [onSelect, tag]);
 	const handleFocus = useCallback(() => onFocusTag(tag), [onFocusTag, tag]);
+	const thumb = tagThumb(tag);
 	return (
 		<SpottableDiv
 			className={selected ? css.railItemSelected : css.railItem}
 			onFocus={handleFocus}
 			onClick={handleSelect}
 		>
-			<TagName name={tag.Name} />
+			{thumb && <img className={css.railThumb} src={getImageUrl(serverUrl, tag.Id, 'Thumb', {maxWidth: 160, tag: thumb})} alt="" />}
+			<TagName name={tag.Name} className={css.railName} />
 		</SpottableDiv>
 	);
 };
@@ -659,6 +663,7 @@ const TagsView = ({serverUrl, tags, selected, onSelectTag, loadChannels, onSelec
 				{tags.map((tag) => (
 					<RailItem
 						key={tag.Id}
+						serverUrl={serverUrl}
 						tag={tag}
 						selected={Boolean(selected && selected.Id === tag.Id)}
 						onSelect={handleSelectTag}
@@ -667,7 +672,15 @@ const TagsView = ({serverUrl, tags, selected, onSelectTag, loadChannels, onSelec
 				))}
 			</Section>
 			<div className={css.tagChannels}>
-				<div className={css.tagHeader}>
+				<div className={tagThumb(selected) ? css.tagHeaderArt : css.tagHeader}>
+					{tagThumb(selected) && (
+						<img
+							key={selected.Id}
+							className={css.tagHeaderImage}
+							src={getImageUrl(serverUrl, selected.Id, 'Thumb', {maxWidth: 1280, tag: tagThumb(selected)})}
+							alt=""
+						/>
+					)}
 					{selected && <TagName name={selected.Name} className={css.tagHeading} />}
 					<Section className={css.gridControls}>
 						<SpottableDiv className={css.chip} onClick={handleSort}>

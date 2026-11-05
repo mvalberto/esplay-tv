@@ -16,6 +16,8 @@ const SETTLE_MS = 150;
 const pictureOf = (item, serverUrl) => {
 	const target = item.Type === 'Genre' && item._representative ? item._representative : item;
 	const base = target._serverUrl || serverUrl;
+	// A channel tag's tile stands for the tag, whose picture is its own.
+	if (target.esplayTagThumb) return getImageUrl(base, target.esplayTagId, 'Thumb', {tag: target.esplayTagThumb, maxWidth: 1280, quality: 80});
 	if (target._externalBackdropUrl) return toAbsoluteImageUrl(target._externalBackdropUrl, base);
 	const backdropId = getBackdropId(target);
 	if (backdropId) return getImageUrl(base, backdropId, 'Backdrop', {maxWidth: 1280, quality: 80});
