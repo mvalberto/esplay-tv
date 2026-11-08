@@ -1301,17 +1301,6 @@ const Login = ({
 							{isConnecting ? $L('Signing in...') : $L('Sign In')}
 						</SpottableButton>
 					</div>
-					<div className={css.buttonWrap}>
-						<SpottableButton
-							data-spotlight-id="esplay-server-btn"
-							className={css.outlineButton}
-							onClick={goToServers}
-							disabled={isConnecting}
-						>
-							<MaterialIcon name="dns" className={css.outlineButtonIcon} />
-							{$L('Connect by entering the server')}
-						</SpottableButton>
-					</div>
 				</div>
 			</div>
 		</FocusArea>

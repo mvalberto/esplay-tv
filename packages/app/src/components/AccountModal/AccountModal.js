@@ -33,7 +33,6 @@ const AccountModal = ({
 	open,
 	onClose,
 	onLogout,
-	onAddServer,
 	onAddUser
 }) => {
 	const {
@@ -44,8 +43,7 @@ const AccountModal = ({
 		activeServerInfo,
 		switchUser,
 		removeUser,
-		hasMultipleUsers,
-		startAddServerFlow
+		hasMultipleUsers
 	} = useAuth();
 	const {settings} = useSettings();
 
@@ -104,12 +102,6 @@ const AccountModal = ({
 		onClose?.();
 		onAddUser?.();
 	}, [onClose, onAddUser]);
-
-	const handleSelectServer = useCallback(() => {
-		startAddServerFlow();
-		onClose?.();
-		onAddServer?.();
-	}, [startAddServerFlow, onClose, onAddServer]);
 
 	const handleUserCardClick = useCallback(async (e) => {
 		const serverId = e.currentTarget.dataset.serverId;
@@ -218,14 +210,10 @@ const AccountModal = ({
 				</div>
 
 				<div className={css.actions}>
-					<div className={css.actionPair}>
-						<SpottableButton className={css.actionBtn} onClick={handleSelectServer} data-spotlight-id="account-add-server">
-							{$L('Select Server')}
-						</SpottableButton>
-						<SpottableButton className={css.actionBtn} onClick={handleLogout} data-spotlight-id="account-logout">
-							{$L('Sign Out')}
-						</SpottableButton>
-					</div>
+					{/* EsPlay: the server comes from the panel, so there is no server to pick here. */}
+					<SpottableButton className={css.actionBtn} onClick={handleLogout} data-spotlight-id="account-logout">
+						{$L('Sign Out')}
+					</SpottableButton>
 					{hasMultipleUsers && (
 						<SpottableButton
 							className={`${css.actionBtn} ${css.dangerBtn}`}
