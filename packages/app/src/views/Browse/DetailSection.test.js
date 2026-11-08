@@ -26,13 +26,13 @@ describe('the classic home info area', () => {
 			{text: '2023'},
 			{chip: 'TV-14'},
 			{text: '52m'},
-			{text: 'Drama, Mystery, Crime'}
+			{text: 'Drama, Misterio, Crimen'}
 		]);
 	});
 
 	test('a movie leads with its year, and a series leaves out the runtime', () => {
 		const movie = {Type: 'Movie', ProductionYear: 2024, OfficialRating: 'PG-13', RunTimeTicks: HOUR * 2 + HOUR * 14 / 60, Genres: ['Science Fiction']};
-		expect(buildInfoParts(movie)).toEqual([{text: '2024'}, {chip: 'PG-13'}, {text: '2h 14m'}, {text: 'Science Fiction'}]);
-		expect(buildInfoParts({...movie, Type: 'Series'})).toEqual([{text: '2024'}, {chip: 'PG-13'}, {text: 'Science Fiction'}]);
+		expect(buildInfoParts(movie)).toEqual([{text: '2024'}, {chip: 'PG-13'}, {text: '2h 14m'}, {text: 'Ciencia ficción'}]);
+		expect(buildInfoParts({...movie, Type: 'Series'})).toEqual([{text: '2024'}, {chip: 'PG-13'}, {text: 'Ciencia ficción'}]);
 	});
 });

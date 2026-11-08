@@ -15,7 +15,7 @@ jest.mock('react/jsx-dev-runtime', () => {
 	};
 });
 jest.mock('@enact/i18n/$L', () => (text) => text);
-jest.mock('../../services/jellyfinApi', () => ({getAuthHeader: () => '', getServerUrl: () => '', api: {}}));
+jest.mock('../../services/jellyfinApi', () => ({getAuthHeader: () => '', getServerUrl: () => '', getTokenParam: () => 'api_key', getApiKey: () => '', api: {}}));
 jest.mock('../../utils/requestQueue', () => ({mediaServerQueue: {run: (task) => task()}}));
 
 const mockSettings = {

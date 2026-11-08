@@ -44,7 +44,10 @@ const api = {
 	getGenres
 };
 
-const props = (settings, homeRowsConfig = [], apiChanges) => ({
+// EsPlay: Home only loads the rows switched on, so these tests switch on the ones they look at.
+const ROWS = ['genres', 'latest-media', 'recently-released', 'collections', 'onnow'].map((id) => ({id, enabled: true}));
+
+const props = (settings, homeRowsConfig = ROWS, apiChanges) => ({
 	api: apiChanges ? {...api, ...apiChanges} : api,
 	serverUrl: 'http://server',
 	accessToken: 'token',
@@ -121,7 +124,7 @@ describe('empty Home sections', () => {
 			getRecentlyReleased: () => new Promise(() => {}),
 			getLiveTvAiringPrograms: () => new Promise(() => {})
 		};
-		const {result} = renderHook((p) => useBrowseData(p), {initialProps: props({}, [{id: 'onnow', enabled: true}], stillLoading)});
+		const {result} = renderHook((p) => useBrowseData(p), {initialProps: props({}, ROWS, stillLoading)});
 
 		const knownEmpty = await loadingGenres(result);
 		expect(knownEmpty.has('genres')).toBe(true);

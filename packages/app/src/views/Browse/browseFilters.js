@@ -3,9 +3,11 @@
 
 import $L from '@enact/i18n/$L';
 
-// EsPlay: 'livetv' too. Emby answers a Latest query on the Live TV view with series from the
-// other libraries, so Home showed «Añadido recientemente en TV en directo» full of shows.
-export const EXCLUDED_COLLECTION_TYPES = ['boxsets', 'books', 'musicvideos', 'homevideos', 'photos', 'livetv'];
+// EsPlay: the same libraries the Flutter apps leave out of Latest and Recently Released
+// (home_view_model.dart, _loadRecentRows), so all apps show the same rows: Conciertos
+// (musicvideos) was missing here. Live TV is left out because Emby answers a Latest query on its
+// view with series from the other libraries. EsPlay has no books, photos or home videos.
+export const EXCLUDED_COLLECTION_TYPES = ['boxsets', 'livetv', 'playlists', 'books', 'photos', 'homevideos'];
 
 export const FAVORITE_ROW_CONFIGS = [
 	{id: 'favoriteMovies', title: $L('Favorite Movies'), includeItemTypes: 'Movie', type: 'portrait'},

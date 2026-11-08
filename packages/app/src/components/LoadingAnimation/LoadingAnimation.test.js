@@ -102,11 +102,12 @@ describe('loading overlay', () => {
 	test('draws the image at the size picked, or the one the preview hands in', () => {
 		mockSettings.loadingAnimationSize = 'large';
 		const {unmount} = render(<LoadingOverlay />);
-		expect(find('.esplayButton').getAttribute('width')).toBe('170');
+		// EsPlay: the Escape play is drawn at 60% of the size picked.
+		expect(find('.esplayButton').getAttribute('width')).toBe('102');
 		unmount();
 
 		render(<LoadingOverlay pixelSize={104} />);
-		expect(find('.esplayButton').getAttribute('width')).toBe('104');
+		expect(find('.esplayButton').getAttribute('width')).toBe('62');
 	});
 
 	test('writes the label in capitals under the image', () => {
