@@ -347,7 +347,10 @@ const useDetailsItem = ({itemId, initialItem, effectiveApi, effectiveServerUrl, 
 						ParentId: data.Id,
 						SortBy: 'ProductionYear,SortName',
 						SortOrder: 'Ascending',
-						Fields: 'PrimaryImageAspectRatio,ProductionYear,ProviderIds'
+						Fields: 'PrimaryImageAspectRatio,ProductionYear,ProviderIds',
+						// EsPlay: without the viewer's played state. Emby works it out for a series by
+						// walking its episodes: Netflix's 1,340 titles took 33 s instead of 0.7 s.
+						EnableUserData: false
 					}).catch(() => null);
 					boxSetMembers = collectionData?.Items || [];
 					if (collectionData) {

@@ -475,7 +475,9 @@ const ModernDetailContent = (props) => {
 		if (crew.length) list.push({id: 'crew', label: $L('Crew')});
 		if (studios?.length) list.push({id: 'studios', label: $L('Studios')});
 		// After the collection's own tabs, so it still opens on what it holds.
-		if (isBoxSet && showsSection('playlistOrder')) list.push({id: 'collectionPlaylist', label: $L('Playlist')});
+		// EsPlay: once the titles are in, or it would be the only tab and start the playlist build.
+		const hasBoxSetItems = boxSetGroups.movies.length + boxSetGroups.series.length + boxSetGroups.other.length > 0;
+		if (isBoxSet && hasBoxSetItems && showsSection('playlistOrder')) list.push({id: 'collectionPlaylist', label: $L('Playlist')});
 		if (chapters?.length) list.push({id: 'chapters', label: $L('Chapters')});
 		if (additionalParts.length) list.push({id: 'additionalParts', label: $L('Additional Parts')});
 		if (otherExtras.length) list.push({id: 'extras', label: $L('Extras')});

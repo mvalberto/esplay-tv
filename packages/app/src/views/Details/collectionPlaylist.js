@@ -61,7 +61,9 @@ export const buildCollectionIndex = async (api, collectionId) => {
 	const data = await api.getItems({
 		ParentId: collectionId,
 		Limit: INDEX_SCAN_LIMIT,
-		Fields: 'BasicSyncInfo'
+		Fields: 'BasicSyncInfo',
+		// EsPlay: the played state is not needed here, and Emby is slow to work it out for series.
+		EnableUserData: false
 	}).catch(() => null);
 	const members = data?.Items || [];
 	const series = members.filter((item) => item?.Type === 'Series');
