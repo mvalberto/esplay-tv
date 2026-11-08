@@ -153,9 +153,19 @@ export const byLastPlayedDesc = (a, b) => {
 // Folds the per library answers back into the single response the caller expected.
 export const mergeResponses = (responses, {sortBy, sortOrder, limit, merge} = {}) => {
 	const items = [];
+	// EsPlay: a collection holding titles from several libraries comes back once per library;
+	// keep it once.
+	const seen = new Set();
 	let total = 0;
 	(responses || []).forEach((response) => {
-		(response?.Items || []).forEach((item) => items.push(item));
+		(response?.Items || []).forEach((item) => {
+			if (item?.Id && seen.has(item.Id)) {
+				total--;
+				return;
+			}
+			if (item?.Id) seen.add(item.Id);
+			items.push(item);
+		});
 		total += Number(response?.TotalRecordCount) || 0;
 	});
 
