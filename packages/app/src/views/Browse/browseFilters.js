@@ -3,7 +3,9 @@
 
 import $L from '@enact/i18n/$L';
 
-export const EXCLUDED_COLLECTION_TYPES = ['boxsets', 'books', 'musicvideos', 'homevideos', 'photos'];
+// EsPlay: 'livetv' too. Emby answers a Latest query on the Live TV view with series from the
+// other libraries, so Home showed «Añadido recientemente en TV en directo» full of shows.
+export const EXCLUDED_COLLECTION_TYPES = ['boxsets', 'books', 'musicvideos', 'homevideos', 'photos', 'livetv'];
 
 export const FAVORITE_ROW_CONFIGS = [
 	{id: 'favoriteMovies', title: $L('Favorite Movies'), includeItemTypes: 'Movie', type: 'portrait'},
