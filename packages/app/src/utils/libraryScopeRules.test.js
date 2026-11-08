@@ -109,8 +109,9 @@ describe('scopeLibraries', () => {
 	});
 
 	test('an unmapped type visits every visible library rather than none', () => {
-		expect(wantedCollectionTypes('MusicAlbum')).toEqual([]);
-		expect(scopeLibraries({views, excludes: ['music1'], includeItemTypes: 'MusicAlbum'}))
+		// EsPlay maps the music types to music libraries, so Book stands in as the unmapped type.
+		expect(wantedCollectionTypes('Book')).toEqual([]);
+		expect(scopeLibraries({views, excludes: ['music1'], includeItemTypes: 'Book'}))
 			.toEqual(['movies1', 'shows1', 'mixed1', 'boxes1']);
 	});
 });
