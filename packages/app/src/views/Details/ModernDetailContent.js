@@ -68,6 +68,30 @@ const Icon = ({path}) => (
 );
 const RowContainer = SpotlightContainerDecorator({enterTo: 'last-focused'}, 'div');
 
+// EsPlay: a long grid (a streaming-service collection holds hundreds of titles) draws its first
+// cards and adds more as focus nears the end. The TV's browser doesn't defer offscreen images, so
+// drawing them all asked for every poster at once.
+const GRID_STEP = 30;
+const GrowingGrid = ({items, renderItem, className}) => {
+	const [count, setCount] = useState(GRID_STEP);
+	// Keyed on what the list holds, not its identity, which some callers rebuild every render.
+	const firstId = items[0]?.Id;
+	useEffect(() => { setCount(GRID_STEP); }, [items.length, firstId]);
+	const handleFocus = useCallback((ev) => {
+		if (count >= items.length) return;
+		const grid = ev.currentTarget;
+		let el = ev.target;
+		while (el && el.parentElement !== grid) el = el.parentElement;
+		const index = el ? Array.prototype.indexOf.call(grid.children, el) : -1;
+		if (index >= count - 8) setCount((n) => n + GRID_STEP);
+	}, [count, items.length]);
+	return (
+		<RowContainer className={className} onFocus={handleFocus}>
+			{items.slice(0, count).map(renderItem)}
+		</RowContainer>
+	);
+};
+
 // Whether anything focusable sits above the active element, which is what marks
 // a top row apart from the rows that can still move up on their own.
 const hasSpottableAbove = (container, active) => {
@@ -424,6 +448,16 @@ const ModernDetailContent = (props) => {
 	// switched off counts as one with nothing in it, so its tab goes the same way.
 	const {parts: additionalParts, others: otherExtras} = useMemo(() => splitAdditionalParts(extras), [extras]);
 
+	// EsPlay: a collection opens split by kind, Movies, TV Shows and the rest, as on the APK.
+	const boxSetGroups = useMemo(() => {
+		const items = isBoxSet ? collectionItems : [];
+		return {
+			movies: items.filter((i) => i.Type === 'Movie'),
+			series: items.filter((i) => i.Type === 'Series'),
+			other: items.filter((i) => i.Type !== 'Movie' && i.Type !== 'Series')
+		};
+	}, [isBoxSet, collectionItems]);
+
 	const tabs = useMemo(() => {
 		const list = [];
 		if (isSeries && seasons.length) list.push({id: 'seasons', label: $L('Seasons')});
@@ -434,7 +468,9 @@ const ModernDetailContent = (props) => {
 		}
 		if ((isAlbum && albumTracks.length) || isPlaylist) list.push({id: 'tracks', label: $L('Tracks')});
 		if (isMusicArtist && artistAlbums.length) list.push({id: 'albums', label: $L('Albums')});
-		if (isBoxSet && collectionItems.length) list.push({id: 'items', label: $L('Items')});
+		if (boxSetGroups.movies.length) list.push({id: 'boxMovies', label: $L('Movies')});
+		if (boxSetGroups.series.length) list.push({id: 'boxSeries', label: $L('TV Shows')});
+		if (boxSetGroups.other.length) list.push({id: 'items', label: boxSetGroups.movies.length || boxSetGroups.series.length ? $L('Other') : $L('Items')});
 		if (cast.length) list.push({id: 'cast', label: $L('Cast')});
 		if (crew.length) list.push({id: 'crew', label: $L('Crew')});
 		if (studios?.length) list.push({id: 'studios', label: $L('Studios')});
@@ -449,7 +485,7 @@ const ModernDetailContent = (props) => {
 		if (reviews.length) list.push({id: 'reviews', label: $L('Reviews')});
 		if (seerr.hasTabContent) list.push({id: 'seerr', label: seerr.displayName});
 		return list;
-	}, [isSeries, seasons.length, listsEpisodes, episodes.length, isPerson, personMovies.length, personSeries.length, isAlbum, isPlaylist, albumTracks.length, isMusicArtist, artistAlbums.length, isBoxSet, showsSection, collectionItems.length, collectionSections.length, collectionTabLabel, cast.length, crew.length, studios, chapters, additionalParts.length, otherExtras.length, showsDetails, similar.length, reviews.length, seerr.hasTabContent, seerr.displayName]);
+	}, [isSeries, seasons.length, listsEpisodes, episodes.length, isPerson, personMovies.length, personSeries.length, isAlbum, isPlaylist, albumTracks.length, isMusicArtist, artistAlbums.length, isBoxSet, showsSection, boxSetGroups, collectionSections.length, collectionTabLabel, cast.length, crew.length, studios, chapters, additionalParts.length, otherExtras.length, showsDetails, similar.length, reviews.length, seerr.hasTabContent, seerr.displayName]);
 
 	const [activeTab, setActiveTab] = useState(null);
 	// Expanded Tabs on keeps the first tab open and lets focus follow selection.
@@ -460,6 +496,12 @@ const ModernDetailContent = (props) => {
 	const forceFirstTab = isAlbum || isPlaylist;
 	const validActiveTab = activeTab && tabs.some((t) => t.id === activeTab) ? activeTab : null;
 	const currentTab = validActiveTab || ((expanded || forceFirstTab) ? (tabs[0]?.id || null) : null);
+
+	// EsPlay: a collection's playlist is only built once its tab is opened.
+	const requestCollectionPlaylist = collectionOrder?.request;
+	useEffect(() => {
+		if (currentTab === 'collectionPlaylist') requestCollectionPlaylist?.();
+	}, [currentTab, requestCollectionPlaylist]);
 
 	const handleTabActivate = useCallback((id) => {
 		if (expanded) {
@@ -525,12 +567,11 @@ const ModernDetailContent = (props) => {
 		}
 	}, [currentTab]);
 
+	const cardRenderer = (cardType, onSelect, menuOptions) => (it) => (
+		<MediaCard key={it.Id} item={it} serverUrl={effectiveServerUrl} cardType={cardType} onSelect={onSelect} menuOptions={menuOptions} />
+	);
 	const renderGrid = (items, cardType, onSelect = onSelectItem, menuOptions) => (
-		<RowContainer className={css.grid}>
-			{items.map((it) => (
-				<MediaCard key={it.Id} item={it} serverUrl={effectiveServerUrl} cardType={cardType} onSelect={onSelect} menuOptions={menuOptions} />
-			))}
-		</RowContainer>
+		<GrowingGrid className={css.grid} items={items} renderItem={cardRenderer(cardType, onSelect, menuOptions)} />
 	);
 
 	const renderEpisodesTab = () => (
@@ -777,8 +818,12 @@ const ModernDetailContent = (props) => {
 				return renderGrid(personSeries, 'portrait');
 			case 'albums':
 				return renderGrid(artistAlbums, 'square');
+			case 'boxMovies':
+				return renderGrid(boxSetGroups.movies, 'portrait', onSelectItem, collectionMenu);
+			case 'boxSeries':
+				return renderGrid(boxSetGroups.series, 'portrait', onSelectItem, collectionMenu);
 			case 'items':
-				return renderGrid(collectionItems, 'portrait', onSelectItem, collectionMenu);
+				return renderGrid(boxSetGroups.other, 'portrait', onSelectItem, collectionMenu);
 			case 'collection':
 				if (collectionSections.length === 1) return renderGrid(collectionSections[0].items, 'portrait');
 				return (

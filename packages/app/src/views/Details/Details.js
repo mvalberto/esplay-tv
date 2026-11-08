@@ -164,7 +164,7 @@ const Details = ({itemId: itemIdProp, initialItem, onPlay, onSelectItem, onSelec
 	const {
 		setItem, isLoading: libraryLoading, isBlocked: blockedByRating, isSeed, seasons, episodes, seriesEpisodes, similar, extras, cast, nextUp, nextEpisode,
 		collectionItems, missingCollectionItems, parentCollections, similarSource, similarLoaded, playListsLoaded, loadMoreCollectionItems, removeFromCollection, albumTracks, artistAlbums,
-		playlistItems, setPlaylistItems, collectionIndexRef, collectionSort, collectionPlaylistLoading, chooseCollectionSort, moveCollectionItem,
+		playlistItems, setPlaylistItems, collectionIndexRef, collectionSort, collectionPlaylistLoading, chooseCollectionSort, requestCollectionPlaylist, moveCollectionItem,
 		episodeRatings, refreshItem,
 		selectedVersionIndex, setSelectedVersionIndex,
 		selectedAudioIndex, setSelectedAudioIndex,
@@ -287,8 +287,16 @@ const Details = ({itemId: itemIdProp, initialItem, onPlay, onSelectItem, onSelec
 	const collectionOrder = useMemo(() => (isBoxSet ? {
 		sortOption: collectionSort,
 		loading: collectionPlaylistLoading,
-		choose: chooseCollectionSort
-	} : null), [isBoxSet, collectionSort, collectionPlaylistLoading, chooseCollectionSort]);
+		choose: chooseCollectionSort,
+		request: requestCollectionPlaylist
+	} : null), [isBoxSet, collectionSort, collectionPlaylistLoading, chooseCollectionSort, requestCollectionPlaylist]);
+
+	// EsPlay: Modern builds a collection's playlist when its tab opens. The other layouts show it
+	// from the start, so they ask for it straight away.
+	const playlistShownUpFront = settings.detailScreenStyle === 'v1' || Boolean(DETAIL_CONTENT[settings.detailScreenStyle]);
+	useEffect(() => {
+		if (isBoxSet && playlistShownUpFront) requestCollectionPlaylist();
+	}, [isBoxSet, playlistShownUpFront, requestCollectionPlaylist, item?.Id]);
 
 	// Keyed on the id rather than the item, because marking watched or favourite
 	// builds a new item object, which would otherwise yank focus back to Play.

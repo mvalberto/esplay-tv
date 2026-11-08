@@ -37,6 +37,20 @@ const seedIsDecided = (seed) => !getActiveParentalFilter().isActive || !seed.Ser
 
 const PROBED_TYPES = ['Movie', 'Episode', 'Video', 'MusicVideo', 'Trailer'];
 
+// EsPlay: each collection's scanned playlist, kept a while so opening it again doesn't ask every
+// series in it for its episodes again (a streaming-service collection has hundreds).
+const INDEX_CACHE_MS = 10 * 60 * 1000;
+const collectionIndexCache = new Map();
+const cachedCollectionIndex = async (api, serverUrl, collectionId) => {
+	const key = `${serverUrl}|${collectionId}`;
+	const hit = collectionIndexCache.get(key);
+	if (hit && Date.now() - hit.at < INDEX_CACHE_MS) return hit.entries;
+	const entries = await buildCollectionIndex(api, collectionId);
+	if (entries.length) collectionIndexCache.set(key, {at: Date.now(), entries});
+	return entries;
+};
+export const forgetCollectionIndex = (serverUrl, collectionId) => collectionIndexCache.delete(`${serverUrl}|${collectionId}`);
+
 // An Emby channel item comes with a placeholder source, so the screen shows the one the server
 // probes when it's asked without that.
 const withProbedSources = async (api, data) => {
@@ -57,6 +71,8 @@ const SIMILAR_LIMIT = 20;
 const useDetailsItem = ({itemId, initialItem, effectiveApi, effectiveServerUrl, settings, recommendationsSupported, seerrEnabled, tagWithServerInfo, skip}) => {
 	const seedRef = useRef(initialItem);
 	seedRef.current = initialItem;
+	const serverUrlRef = useRef(effectiveServerUrl);
+	serverUrlRef.current = effectiveServerUrl;
 	// Read where they are used rather than depended on, so a change to either one
 	// does not refetch the whole screen.
 	const settingsRef = useRef(settings);
@@ -76,6 +92,9 @@ const useDetailsItem = ({itemId, initialItem, effectiveApi, effectiveServerUrl, 
 	const playlistGenerationRef = useRef(0);
 	// Every title in the collection in the server's order, which each sort is worked out from.
 	const collectionEntriesRef = useRef(null);
+	// EsPlay: the collection's playlist is built when a screen first shows it, not on open.
+	const collectionPlaylistStartRef = useRef(null);
+	const collectionPlaylistWantedRef = useRef(false);
 	// Read when the scan lands, so a sort picked while it was still running holds.
 	const collectionSortRef = useRef(DEFAULT_SORT);
 	seerrEnabledRef.current = seerrEnabled;
@@ -173,6 +192,8 @@ const useDetailsItem = ({itemId, initialItem, effectiveApi, effectiveServerUrl, 
 		playlistGenerationRef.current += 1;
 		collectionLoadingRef.current = false;
 		collectionEntriesRef.current = null;
+		collectionPlaylistStartRef.current = null;
+		collectionPlaylistWantedRef.current = false;
 		collectionSortRef.current = DEFAULT_SORT;
 		setCollectionSort(DEFAULT_SORT);
 		setCollectionCustomOrder([]);
@@ -481,10 +502,11 @@ const useDetailsItem = ({itemId, initialItem, effectiveApi, effectiveServerUrl, 
 				// of every series in it. Only the first page is read here, the rest follows as
 				// the viewer scrolls.
 				if (data.Type === 'BoxSet') {
+					collectionPlaylistStartRef.current = async () => {
 					const generation = playlistGenerationRef.current;
 					setCollectionPlaylistLoading(true);
 					const [scanned, saved] = await Promise.all([
-						buildCollectionIndex(effectiveApi, itemId),
+						cachedCollectionIndex(effectiveApi, serverUrlRef.current || '', itemId),
 						Promise.resolve(effectiveApi.getCollectionOrder?.(itemId)).catch(() => null)
 					]);
 					if (cancelled || generation !== playlistGenerationRef.current) return;
@@ -498,6 +520,13 @@ const useDetailsItem = ({itemId, initialItem, effectiveApi, effectiveServerUrl, 
 					setCollectionSort(collectionSortRef.current);
 					const index = customOrder.length ? customOrder : orderCollectionIndex(entries, collectionSortRef.current);
 					await startCollectionPlaylist(index, generation);
+					};
+				}
+				// Asked for before the collection had loaded: build it now.
+				if (data.Type === 'BoxSet' && collectionPlaylistWantedRef.current) {
+					const start = collectionPlaylistStartRef.current;
+					collectionPlaylistStartRef.current = null;
+					await start();
 				}
 
 				if (data.Type === 'Person') {
@@ -511,6 +540,17 @@ const useDetailsItem = ({itemId, initialItem, effectiveApi, effectiveServerUrl, 
 		loadItem();
 		return () => { cancelled = true; };
 	}, [effectiveApi, itemId, tagWithServerInfo, skip, startCollectionPlaylist]);
+
+	// Runs the collection's playlist build once, the first time something asks for it.
+	const requestCollectionPlaylist = useCallback(() => {
+		const start = collectionPlaylistStartRef.current;
+		if (!start) {
+			collectionPlaylistWantedRef.current = true;
+			return;
+		}
+		collectionPlaylistStartRef.current = null;
+		start().catch(() => setCollectionPlaylistLoading(false));
+	}, []);
 
 	const chooseCollectionSort = useCallback((option) => {
 		if (option === collectionSortRef.current) return;
@@ -591,6 +631,7 @@ const useDetailsItem = ({itemId, initialItem, effectiveApi, effectiveServerUrl, 
 	// about through the rethrow.
 	const removeFromCollection = useCallback(async (member) => {
 		if (item?.Type !== 'BoxSet') return;
+		forgetCollectionIndex(serverUrlRef.current || '', item.Id);
 		const previousCollection = collectionItems;
 		const previousPlaylist = playlistItems;
 		const previousIndex = collectionIndexRef.current;
@@ -678,6 +719,7 @@ const useDetailsItem = ({itemId, initialItem, effectiveApi, effectiveServerUrl, 
 		collectionSort,
 		collectionPlaylistLoading,
 		chooseCollectionSort,
+		requestCollectionPlaylist,
 		moveCollectionItem,
 		setPlaylistItems,
 		episodeRatings,
