@@ -540,6 +540,28 @@ const airingInChannelOrder = async (limit) => {
 		});
 		if (Items.length >= limit) break;
 	}
+	// A user whose first channels have no guide (on ep02 the list can open with hundreds of them)
+	// still gets what airs, straight from the guide, with each channel's logo looked up after.
+	if (Items.length < limit) {
+		try {
+			const airing = await request(`/LiveTv/Programs?UserId=${currentUser}&IsAiring=true&Fields=ChannelInfo,Overview&EnableTotalRecordCount=false&Limit=${limit * 2}`);
+			const seen = new Set(Items.map((p) => p.ChannelId));
+			const extra = [];
+			for (const program of airing?.Items || []) {
+				if (!program.ChannelId || seen.has(program.ChannelId)) continue;
+				seen.add(program.ChannelId);
+				extra.push(program);
+				if (Items.length + extra.length >= limit) break;
+			}
+			if (extra.length > 0) {
+				const channels = await request(`/LiveTv/Channels?UserId=${currentUser}&Ids=${extra.map((p) => p.ChannelId).join(',')}&EnableImageTypes=Primary&ImageTypeLimit=1&EnableTotalRecordCount=false`).catch(() => null);
+				const logos = new Map((channels?.Items || []).map((c) => [c.Id, c.ImageTags?.Primary]));
+				for (const program of extra) Items.push({...program, ChannelPrimaryImageTag: logos.get(program.ChannelId)});
+			}
+		} catch (e) {
+			// On now just shows what the channel list found.
+		}
+	}
 	return {Items, TotalRecordCount: Items.length};
 };
 
