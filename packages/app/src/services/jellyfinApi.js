@@ -1271,9 +1271,10 @@ export const createApiForServer = (serverUrl, token, userId, serverTypeOverride 
 			return serverRequest(endpoint);
 		},
 
-		getLatestMedia: (libraryId = null, limit = 16) => {
+		getLatestMedia: (libraryId = null, limit = 16, includeTypes = null) => {
 			let endpoint = `${serverUserRoutes.latest()}Limit=${limit}&Fields=${encodeURIComponent(HOME_ROW_ITEM_FIELDS)}`;
 			if (libraryId) endpoint += `&ParentId=${libraryId}`;
+			if (includeTypes) endpoint += `&IncludeItemTypes=${includeTypes}`;
 			return serverRequest(endpoint);
 		},
 

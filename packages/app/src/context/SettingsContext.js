@@ -34,6 +34,7 @@ import {
 export {DEFAULT_HOME_ROWS, TV_TO_SERVER_ROW, SERVER_TO_TV_ROW};
 
 import {defaultSettings} from './defaultSettings';
+import {ESPLAY_MEDIA_BAR_SETTINGS} from '../utils/esplayMediaBar';
 
 export {defaultSettings};
 
@@ -1197,7 +1198,8 @@ export function SettingsProvider({children}) {
 		maxBitrate: 200000000,
 		maxVideoResolution: 'auto',
 		preferTranscode: false,
-		forceDirectPlay: false
+		forceDirectPlay: false,
+		...ESPLAY_MEDIA_BAR_SETTINGS
 	}), [settings]);
 
 	return (

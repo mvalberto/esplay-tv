@@ -16,6 +16,7 @@ import {featuredConfigKey} from './featuredConfig';
 import {withExternalSlides} from './featuredExternal';
 import {readFeaturedSources} from './featuredSources';
 import {shuffleArray} from '../Details/detailsMedia';
+import {ESPLAY_FORCE_MEDIA_BAR, esplayNewestFeatured} from '../../utils/esplayMediaBar';
 import {withoutBlockedItems} from '../../services/parentalControls';
 import {activeSyncProfile} from '../../context/SettingsContext';
 import {
@@ -104,7 +105,8 @@ const useBrowseData = ({
 				items = await mixInExternal([]);
 			}
 
-			if (items.length === 0 && s.useMoonfinPlugin) {
+			// EsPlay picks its own titles, so the plugin's pick from the synced settings is left out.
+			if (items.length === 0 && s.useMoonfinPlugin && !ESPLAY_FORCE_MEDIA_BAR) {
 				// The plugin answers from the synced picks, so it has to read the profile this TV syncs with.
 				const mediaBarResult = await seerrApi.getMoonfinMediaBar(serverUrl, accessToken, activeSyncProfile(s.syncProfile));
 				if (mediaBarResult?.Items?.length) {
@@ -118,7 +120,10 @@ const useBrowseData = ({
 					matchesContentType(item, s.featuredContentType) &&
 					filterItemsByExcludedGenres([item], s.excludedGenres).length > 0 && withoutBlockedItems([item]).length > 0;
 				const pickFrom = (pool) => shuffleArray(pool.filter(isUsable)).slice(0, count);
-				if (sourceType === 'collection' && collectionIds.length > 0) {
+				if (!unifiedMode) items = await esplayNewestFeatured(api, count, isUsable);
+				if (items.length > 0) {
+					// EsPlay's newest titles are in.
+				} else if (sourceType === 'collection' && collectionIds.length > 0) {
 					items = pickFrom(await readFeaturedSources(collectionIds, (cid) => api.getCollectionItems(cid, 50), isUsable, count));
 				} else if (unifiedMode) {
 					items = await connectionPool.getRandomItemsFromAllServers(s.featuredContentType, count, libraryIds);
