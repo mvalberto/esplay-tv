@@ -9,7 +9,7 @@ const packageJson = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
 const version = packageJson.version;
 
 // Generate IPK filename
-const ipkFilename = `Moonfin_webOS_v${version}.ipk`;
+const ipkFilename = `EsPlay_webOS_v${version}.ipk`;
 const rootDir = path.resolve(__dirname, '..', '..');
 const ipkPath = path.join(rootDir, ipkFilename);
 
@@ -29,7 +29,7 @@ const sha256 = hashSum.digest('hex');
 console.log(`Calculated SHA256: ${sha256}`);
 
 // Read manifest file
-const manifestPath = './org.moonfin.webos.manifest.json';
+const manifestPath = './es.esplay.webos.manifest.json';
 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 
 // Update manifest

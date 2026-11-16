@@ -1,0 +1,14 @@
+{
+  "id": "es.esplay.webos",
+  "version": "3.0.0",
+  "type": "web",
+  "title": "EsPlay",
+  "appDescription": "EsPlay para televisores LG con webOS 3 o posterior",
+  "iconUri": "icon-130.png",
+  "sourceUrl": "https://github.com/Moonfin-Client/Smart-TV",
+  "rootRequired": false,
+  "ipkUrl": "EsPlay_webOS_v3.0.0.ipk",
+  "ipkHash": {
+    "sha256": "3a8b789c3e980fd26bd61ad1b5236f2286caba19f950e3ce4981f9dad3d5511d"
+  }
+}

@@ -310,7 +310,7 @@ describe('fetchVideoStream', () => {
 		expect(stream.url).toBe(HLS_URL);
 		expect(global.fetch).not.toHaveBeenCalled();
 		expect(calls).toHaveLength(1);
-		expect(calls[0].uri).toBe('luna://org.moonfin.webos.service/fetch');
+		expect(calls[0].uri).toBe('luna://es.esplay.webos.service/fetch');
 		expect(calls[0].payload).toMatchObject({url: 'https://www.youtube.com/youtubei/v1/player?prettyPrint=false', method: 'POST'});
 		expect(JSON.parse(calls[0].payload.body).videoId).toBe('vid');
 	});

@@ -121,6 +121,11 @@ try {
 	// Clean intermediate app dist
 	fs.rmSync(path.join(APP_DIR, 'dist'), {recursive: true, force: true});
 
+	// EsPlay: the animated wordmark covers the black screen while main.js loads (same as Samsung).
+	const indexPath = path.join(DIST_DIR, 'index.html');
+	const bootSplash = fs.readFileSync(path.join(__dirname, '..', 'build-tizen', 'scripts', 'esplay-boot-splash.html'), 'utf8');
+	fs.writeFileSync(indexPath, fs.readFileSync(indexPath, 'utf8').replace('<div id="root"></div>', '<div id="root"></div>' + bootSplash));
+
 	// Patch CSS for legacy WebKit (webOS 2 / Tizen 2.4)
 	// PostCSS resolves most vars at build time, but runtime-set CSS vars and
 	// the 'initial' keyword survive minification and break on old WebKit.
@@ -220,8 +225,8 @@ try {
 		}
 	}
 
-	// Remove previous Moonfin_webOS_*.ipk files before packaging
-	for (const f of fs.readdirSync(ROOT_DIR).filter(f => /^Moonfin_webOS_.*\.ipk$/.test(f))) {
+	// Remove previous EsPlay_webOS_*.ipk files before packaging
+	for (const f of fs.readdirSync(ROOT_DIR).filter(f => /^EsPlay_webOS_.*\.ipk$/.test(f))) {
 		fs.unlinkSync(path.join(ROOT_DIR, f));
 	}
 
@@ -240,8 +245,8 @@ try {
 
 	run(`npx ares-package ${DIST_DIR}${packageServiceArg} -o ${ROOT_DIR} --no-minify`);
 
-	const generatedIpk = path.join(ROOT_DIR, `org.moonfin.webos_${appPkg.version}_all.ipk`);
-	const finalIpk = path.join(ROOT_DIR, `Moonfin_webOS_v${appPkg.version}.ipk`);
+	const generatedIpk = path.join(ROOT_DIR, `es.esplay.webos_${appPkg.version}_all.ipk`);
+	const finalIpk = path.join(ROOT_DIR, `EsPlay_webOS_v${appPkg.version}.ipk`);
 	if (fs.existsSync(generatedIpk)) {
 		fs.renameSync(generatedIpk, finalIpk);
 		console.log(`  Renamed to ${path.basename(finalIpk)}`);
