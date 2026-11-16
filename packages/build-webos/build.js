@@ -198,6 +198,14 @@ try {
 	console.log('\n Pruning ilib locale data...');
 	require(path.join(ROOT_DIR, 'scripts', 'prune-ilib-locales.js'))(DIST_DIR);
 
+	// EsPlay: Sandstone asks for its ilibmanifest.json at start-up and the pack leaves it out.
+	// Without it the webOS WebView throws on the XHR and the app stays blank.
+	const sandstoneRes = path.join(ROOT_DIR, 'node_modules', '@enact', 'sandstone', 'resources');
+	if (fs.existsSync(sandstoneRes)) {
+		copyDirRecursive(sandstoneRes, path.join(DIST_DIR, '_', 'node_modules', '@enact', 'sandstone', 'resources'));
+		console.log('  Copied Sandstone resources');
+	}
+
 	// Drop the per-locale strings.json copies the bundle already carries.
 	console.log('\n Pruning bundled translation copies...');
 	require(path.join(ROOT_DIR, 'scripts', 'prune-bundled-strings.js'))(DIST_DIR);
