@@ -649,6 +649,10 @@ export const api = {
 	getLatest: (libraryId, limit = 20) =>
 		request(`${userRoutes.latest()}ParentId=${libraryId}&Limit=${limit}&Fields=${encodeURIComponent(HOME_ROW_ITEM_FIELDS)}&ImageTypeLimit=1&GroupItems=true`),
 
+	// EsPlay: the same call createApiForServer has, for the media bar's newest titles.
+	getLatestMedia: (libraryId = null, limit = 16, includeTypes = null) =>
+		request(`${userRoutes.latest()}Limit=${limit}&Fields=${encodeURIComponent(HOME_ROW_ITEM_FIELDS)}${libraryId ? `&ParentId=${libraryId}` : ''}${includeTypes ? `&IncludeItemTypes=${includeTypes}` : ''}`),
+
 	getRecentlyReleased: (libraryId, limit = 20, includeItemTypes = 'Movie,Series') =>
 		request(`${userRoutes.items()}IncludeItemTypes=${includeItemTypes}&Recursive=true&ParentId=${libraryId}&Limit=${limit}&Fields=${encodeURIComponent(HOME_ROW_ITEM_FIELDS)}&ImageTypeLimit=1&SortBy=PremiereDate&SortOrder=Descending&MaxPremiereDate=${encodeURIComponent(new Date().toISOString())}`),
 

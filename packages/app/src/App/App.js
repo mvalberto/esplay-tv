@@ -33,6 +33,7 @@ import {activateApp, exitApp} from '../utils/appLifecycle';
 import {SettingsProvider} from '../context/SettingsContext';
 import {seedLanguagePreferences} from '../utils/languagePrefSeed';
 import {shouldRun as shouldRunSetupWizard, beginRerun as beginSetupWizardRerun} from '../utils/setupWizardGate';
+import {ESPLAY_FORCE_MEDIA_BAR} from '../utils/esplayMediaBar';
 import {getActiveServer} from '../services/multiServerManager';
 import {SeerrProvider, useSeerr} from '../context/SeerrContext';
 import {AchievementsProvider, useAchievements} from '../context/AchievementsContext';
@@ -471,7 +472,8 @@ const AppContent = (props) => {
 		(async () => {
 			const activeServer = await getActiveServer().catch(() => null);
 			const run = await shouldRunSetupWizard(activeServer?.id, serverUrl, user.Id);
-			if (!cancelled && run) setSetupWizardActive(true);
+			// EsPlay: the looks are fixed, so the first run wizard never opens by itself.
+			if (!cancelled && run && !ESPLAY_FORCE_MEDIA_BAR) setSetupWizardActive(true);
 		})();
 		return () => {
 			cancelled = true;
