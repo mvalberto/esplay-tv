@@ -236,7 +236,7 @@ const GuideHeroHost = ({store, emitter, focusRef, serverUrl, clockDisplay, versi
 	return <GuideHero {...heroProps} />;
 };
 
-const LiveTV = ({onPlayChannel, onRecordings, backHandlerRef}) => {
+const LiveTV = ({onPlayChannel, onRecordings, backHandlerRef, className}) => {
 	const {api, serverUrl, serverType} = useAuth();
 	// Plex's guide carries no sports, news or kids flags, so those would always come up empty.
 	const guideFilters = useMemo(() => (serverType === 'plex'
@@ -1194,7 +1194,7 @@ const LiveTV = ({onPlayChannel, onRecordings, backHandlerRef}) => {
 	const guideDay = new Date(store.guideDate).toDateString();
 
 	return (
-		<div className={css.page} ref={pageRef}>
+		<div className={className ? css.page + ' ' + className : css.page} ref={pageRef}>
 			<FilterRailContainer className={css.filterRail} spotlightId="livetv-filters">
 				<div ref={filterRailRef} className={css.filterRailScroller}>
 					{guideFilters.map((filter, index) => (

@@ -375,6 +375,9 @@ const ProgramRow = ({serverUrl, program, channel, isCurrent, onPlay, onRecord}) 
 
 const EsplayLiveTV = ({onPlayChannel, onRecordings, backHandlerRef}) => {
 	const {api, serverUrl, user} = useAuth();
+	const {settings} = useSettings();
+	// The app's navigation stays on screen here, so the page starts clear of a top bar.
+	const pageClass = settings.navbarPosition === 'left' ? css.page : css.page + ' ' + css.belowTopNav;
 	const [section, setSection] = useState('home');
 	const [tags, setTags] = useState(null);
 	const [onNow, setOnNow] = useState([]);
@@ -514,14 +517,21 @@ const EsplayLiveTV = ({onPlayChannel, onRecordings, backHandlerRef}) => {
 
 	if (channelPage) {
 		return (
-			<div className={css.page}>
+			<div className={pageClass}>
 				<ChannelPage api={api} serverUrl={serverUrl} channel={channelPage.channel} onPlay={playChannelPage} />
 			</div>
 		);
 	}
 
 	if (section === 'guide') {
-		return <LiveTV onPlayChannel={onPlayChannel} onRecordings={onRecordings} backHandlerRef={guideBackRef} />;
+		return (
+			<LiveTV
+				onPlayChannel={onPlayChannel}
+				onRecordings={onRecordings}
+				backHandlerRef={guideBackRef}
+				className={settings.navbarPosition === 'left' ? css.guideBesideSidebar : css.guideBelowTopNav}
+			/>
+		);
 	}
 
 	const tabs = [
@@ -532,7 +542,7 @@ const EsplayLiveTV = ({onPlayChannel, onRecordings, backHandlerRef}) => {
 	];
 
 	return (
-		<div className={css.page}>
+		<div className={pageClass}>
 			<div className={css.header}>
 				<h1 className={css.title}>{$L('Live TV')}</h1>
 				<Section className={css.tabs}>

@@ -1319,9 +1319,15 @@ const AppContent = (props) => {
 		navigateTo(PANELS.GENRES);
 	}, [navigateTo]);
 
+	// The navigation stays on screen in live TV, so picking it again there starts over at its Home.
+	const [liveTvKey, setLiveTvKey] = useState(0);
 	const handleOpenLiveTv = useCallback(() => {
+		if (panelIndex === PANELS.LIVETV) {
+			setLiveTvKey((key) => key + 1);
+			return;
+		}
 		navigateTo(PANELS.LIVETV);
-	}, [navigateTo]);
+	}, [navigateTo, panelIndex]);
 
 	const handleSelectGenre = useCallback((genre, library) => {
 		// A genre merged across servers has no single library to open, so it goes to the browse
@@ -1776,7 +1782,6 @@ const AppContent = (props) => {
 		panelIndex !== PANELS.GAME_SYSTEM &&
 		panelIndex !== PANELS.GAME_DETAILS &&
 		panelIndex !== PANELS.LIBRARY &&
-		panelIndex !== PANELS.LIVETV &&
 		panelIndex !== PANELS.RECORDINGS &&
 		panelIndex !== PANELS.ADD_SERVER &&
 		panelIndex !== PANELS.ADD_USER &&
@@ -1900,7 +1905,7 @@ const AppContent = (props) => {
 						</Panel>
 						<Panel>
 							{panelIndex === PANELS.LIVETV && (
-								<LiveTV onPlayChannel={handlePlayChannel} onRecordings={handleOpenRecordings} backHandlerRef={backHandlerRef} />
+								<LiveTV key={liveTvKey} onPlayChannel={handlePlayChannel} onRecordings={handleOpenRecordings} backHandlerRef={backHandlerRef} />
 							)}
 						</Panel>
 						<Panel>
