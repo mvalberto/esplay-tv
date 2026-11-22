@@ -3,11 +3,10 @@ import $L from '@enact/i18n/$L';
 import SpotlightContainerDecorator, {spotlightDefaultClass} from '@enact/spotlight/SpotlightContainerDecorator';
 import {useSettings} from '../../context/SettingsContext';
 import {useAuth} from '../../context/AuthContext';
-import {useSeerr} from '../../context/SeerrContext';
 import {useSyncPlay} from '../../context/SyncPlayContext';
 import {useServerMessages} from '../../context/ServerMessagesContext';
 import {useAchievements} from '../../context/AchievementsContext';
-import SeerrIcon from '../icons/SeerrIcon';
+import EsplayRequestsIcon from '../icons/EsplayRequestsIcon';
 import SyncPlayIcon from '../icons/SyncPlayIcon';
 import {FavoritesIcon, FriendsIcon, GenresIcon, HomeIcon, LiveTvIcon, MessagesIcon, SearchIcon, SettingsIcon, ShuffleIcon, libraryNavIcon} from '../icons/navIcons';
 import useClock from '../../hooks/useClock';
@@ -76,7 +75,6 @@ const Sidebar = ({
 	hideForTrailer
 }) => {
 	const {settings, activeTheme} = useSettings();
-	const {isEnabled: seerrEnabled, displayName} = useSeerr();
 	const {serverType} = useAuth();
 	const {isInGroup} = useSyncPlay();
 	const {messages, unreadCount} = useServerMessages();
@@ -92,7 +90,8 @@ const Sidebar = ({
 	const showFavorites = settings.showFavoritesButton !== false;
 	const kidsMode = isKidsMode(settings);
 	const showLiveTv = !kidsMode && settings.showLiveTvButton !== false && hasLiveTv;
-	const showSeerr = !kidsMode && seerrEnabled && settings.showSeerrButton !== false;
+	// EsPlay: the panel's own requests take Seerr's place, for everyone but kids.
+	const showSeerr = !kidsMode;
 	const showSyncPlay = !kidsMode && serverType !== 'plex' && settings.syncplayEnabled !== false && settings.showSyncPlayButton !== false;
 	const navLibraries = librariesForNav(libraries, showLiveTv, {hideLiveTv: kidsMode});
 	const showLibraries = !kidsMode && settings.showLibrariesInToolbar !== false && navLibraries.length > 0;
@@ -176,7 +175,7 @@ const Sidebar = ({
 					)}
 
 					{showSeerr && (
-						<SidebarItem Icon={SeerrIcon} slot={nextSlot()} label={displayName} onClick={onDiscover} />
+						<SidebarItem Icon={EsplayRequestsIcon} slot={nextSlot()} label={$L('Requests')} onClick={onDiscover} />
 					)}
 
 					{showSyncPlay && (

@@ -7,6 +7,7 @@ import LoopMarquee from '../../components/LoopMarquee';
 import {personalRatingIconPath, personalRatingLabel} from './personalRatingAction';
 import {offersFavorite} from './personFavorite';
 import {SpottableDiv} from './detailsSpottables';
+import {openReportDialog} from '../../services/esplayRequests';
 
 import css from './ModernDetailContent.module.less';
 
@@ -119,6 +120,8 @@ export const detailActionCatalogue = (props) => {
 		{id: 'deleteFiles', when: item.CanDelete, render: () => <ActionButton path={DETAIL_ICON_PATHS.delete} label={$L('Delete')} onClick={handleOpenDeleteDialog} />},
 		{id: 'artwork', when: canChangeArtwork, render: () => <ActionButton path={DETAIL_ICON_PATHS.artwork} label={$L('Change Artwork')} onClick={handleOpenArtworkModal} spotlightId="details-artwork-btn" />},
 		{id: 'seerrWatchlist', when: seerr.showsWatchlist, render: () => <ActionButton path={seerr.onWatchlist ? DETAIL_ICON_PATHS.watchlistOn : DETAIL_ICON_PATHS.watchlist} label={seerr.onWatchlist ? $L('On Watchlist') : $L('Add to Watchlist')} active={seerr.onWatchlist} onClick={seerr.toggleWatchlist} />},
+		// EsPlay: reports go to the panel, which the team already works from.
+		{id: 'esplayReport', when: ['Movie', 'Series', 'Season', 'Episode'].indexOf(item.Type) !== -1, render: () => <ActionButton path={DETAIL_ICON_PATHS.reportIssue} label={$L('Report a problem')} onClick={() => openReportDialog(item)} />}, // eslint-disable-line react/jsx-no-bind
 		{id: 'seerrReportIssue', when: seerr.showsReportIssue, render: () => <ActionButton path={DETAIL_ICON_PATHS.reportIssue} label={$L('Report Issue')} onClick={seerr.handleReportIssueClick} />},
 		{id: 'seerrManage', when: seerr.showsManage, render: () => <ActionButton path={DETAIL_ICON_PATHS.manageRequests} label={$L('Manage Requests')} onClick={seerr.handleManageRequestsClick} />},
 		{id: 'keepAsComplete', when: Boolean(handleKeepAsComplete), render: () => <ActionButton path={DETAIL_ICON_PATHS.keepAsComplete} label={$L('Keep as Complete')} onClick={handleKeepAsComplete} />},

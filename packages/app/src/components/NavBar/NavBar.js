@@ -4,11 +4,10 @@ import Spotlight from '@enact/spotlight';
 import SpotlightContainerDecorator from '@enact/spotlight/SpotlightContainerDecorator';
 import {useAuth} from '../../context/AuthContext';
 import {useSettings} from '../../context/SettingsContext';
-import {useSeerr} from '../../context/SeerrContext';
 import {useSyncPlay} from '../../context/SyncPlayContext';
 import {useServerMessages} from '../../context/ServerMessagesContext';
 import {useAchievements} from '../../context/AchievementsContext';
-import SeerrIcon from '../icons/SeerrIcon';
+import EsplayRequestsIcon from '../icons/EsplayRequestsIcon';
 import SyncPlayIcon from '../icons/SyncPlayIcon';
 import {FavoritesIcon, FriendsIcon, GenresIcon, HomeIcon, LiveTvIcon, MessagesIcon, SearchIcon, SettingsIcon, ShuffleIcon, libraryNavIcon} from '../icons/navIcons';
 import useClock from '../../hooks/useClock';
@@ -61,7 +60,6 @@ const NavBar = ({
 	hideForTrailer
 }) => {
 	const {settings, activeTheme} = useSettings();
-	const {isEnabled: seerrEnabled, displayName} = useSeerr();
 	const {isInGroup} = useSyncPlay();
 	const {serverType} = useAuth();
 	const {messages, unreadCount} = useServerMessages();
@@ -77,7 +75,8 @@ const NavBar = ({
 	// would follow the account to the parent's other devices.
 	const kidsMode = isKidsMode(settings);
 	const showLiveTv = !kidsMode && settings.showLiveTvButton !== false && hasLiveTv;
-	const showSeerr = !kidsMode && seerrEnabled && settings.showSeerrButton !== false;
+	// EsPlay: the panel's own requests take Seerr's place, for everyone but kids.
+	const showSeerr = !kidsMode;
 	// Plex has no SyncPlay.
 	const showSyncPlay = !kidsMode && serverType !== 'plex' && settings.syncplayEnabled !== false && settings.showSyncPlayButton !== false;
 	const navLibraries = librariesForNav(libraries, showLiveTv, {hideLiveTv: kidsMode});
@@ -176,7 +175,7 @@ const NavBar = ({
 					)}
 
 					{showSeerr && (
-						<NavPillButton Icon={SeerrIcon} slot={nextSlot()} label={displayName} onClick={onDiscover} spotlightId="navbar-discover" />
+						<NavPillButton Icon={EsplayRequestsIcon} slot={nextSlot()} label={$L('Requests')} onClick={onDiscover} spotlightId="navbar-discover" />
 					)}
 
 					{showLibraries && (settings.showLibrariesIndividually === true ? (

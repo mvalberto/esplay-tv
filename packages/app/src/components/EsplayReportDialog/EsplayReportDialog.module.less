@@ -1,0 +1,174 @@
+// EsPlay report dialog. Flexbox and margins only, no gap or grid, for the older TV engines.
+@red: #E71414;
+@focus: var(--theme-focus-border-color, #fff);
+
+.overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 9999;
+	display: -webkit-flex;
+	display: flex;
+	-webkit-align-items: center;
+	align-items: center;
+	-webkit-justify-content: center;
+	justify-content: center;
+	background: rgba(0, 0, 0, 0.7);
+}
+
+.dialog {
+	width: 760px;
+	padding: 36px 40px;
+	border-radius: 20px;
+	background: #141416;
+	border: 1px solid #2e2e34;
+	color: #fff;
+}
+
+.title {
+	margin: 0;
+	font-size: 34px;
+	font-weight: 700;
+}
+
+.subtitle {
+	margin-top: 6px;
+	font-size: 20px;
+	color: #a1a1aa;
+}
+
+.question {
+	margin: 24px 0 12px;
+	font-size: 20px;
+	color: #d4d4d8;
+}
+
+.grid {
+	display: -webkit-flex;
+	display: flex;
+	-webkit-flex-wrap: wrap;
+	flex-wrap: wrap;
+	margin: -6px;
+}
+
+.category,
+.categorySelected {
+	width: ~'calc(50% - 12px)';
+	margin: 6px;
+	padding: 16px 18px;
+	box-sizing: border-box;
+	border-radius: 14px;
+	border: 3px solid #2e2e34;
+	background: #1c1c20;
+	color: #fff;
+	font-family: inherit;
+	text-align: left;
+	outline: none;
+
+	&:focus {
+		border-color: @focus;
+	}
+}
+
+.categorySelected {
+	background: @red;
+	border-color: @red;
+}
+
+.categoryLabel {
+	display: block;
+	font-size: 22px;
+	font-weight: 700;
+}
+
+.categoryHint {
+	display: block;
+	margin-top: 4px;
+	font-size: 16px;
+	opacity: 0.75;
+}
+
+.input {
+	margin-top: 18px;
+	width: 100%;
+	padding: 14px 16px;
+	box-sizing: border-box;
+	border-radius: 12px;
+	border: 2px solid #3f3f46;
+	background: #0c0c0e;
+	color: #fff;
+	font-size: 20px;
+
+	&:focus,
+	&[data-focused] {
+		border-color: @focus;
+		background: #fff;
+		color: #000;
+	}
+}
+
+.error,
+.ok {
+	margin-top: 18px;
+	font-size: 19px;
+	line-height: 1.4;
+}
+
+.error {
+	color: #fca5a5;
+}
+
+.ok {
+	color: #bbf7d0;
+}
+
+.buttons {
+	display: -webkit-flex;
+	display: flex;
+	-webkit-align-items: center;
+	align-items: center;
+	margin-top: 26px;
+}
+
+.limit {
+	-webkit-flex: 1;
+	flex: 1;
+	font-size: 16px;
+	color: #a1a1aa;
+}
+
+.button,
+.buttonPrimary {
+	margin-left: 12px;
+	padding: 12px 28px;
+	border-radius: 28px;
+	border: 3px solid #3f3f46;
+	background: transparent;
+	color: #fff;
+	font-family: inherit;
+	font-size: 20px;
+	outline: none;
+
+	&:focus {
+		border-color: @focus;
+	}
+
+	&[disabled] {
+		opacity: 0.4;
+	}
+}
+
+.buttonPrimary {
+	font-weight: 700;
+	background: #fff;
+	border-color: #fff;
+	color: #000;
+
+	&:focus {
+		background: @red;
+		border-color: @red;
+		color: #fff;
+	}
+}

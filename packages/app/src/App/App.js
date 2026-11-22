@@ -92,6 +92,8 @@ const Genres = lazy(() => import('../views/Genres'));
 const GenreBrowse = lazy(() => import('../views/GenreBrowse'));
 // EsPlay: live TV by Emby channel tags, with the guide as one of its tabs.
 const LiveTV = lazy(() => import('../views/EsplayLiveTV'));
+const EsplayRequests = lazy(() => import('../views/EsplayRequests'));
+const EsplayReportDialog = lazy(() => import('../components/EsplayReportDialog'));
 const Recordings = lazy(() => import('../views/Recordings'));
 const SeerrDiscover = lazy(() => import('../views/SeerrDiscover'));
 const SeerrRequests = lazy(() => import('../views/SeerrRequests'));
@@ -173,7 +175,8 @@ const PANELS = {
 	GAME_DETAILS: 19,
 	GAME_PLAYER: 20,
 	SEERR_COLLECTION: 21,
-	GAME_SYSTEM: 22
+	GAME_SYSTEM: 22,
+	ESPLAY_REQUESTS: 23
 };
 
 const AppContent = (props) => {
@@ -1393,8 +1396,9 @@ const AppContent = (props) => {
 		navigateTo(PANELS.PLAYER);
 	}, [navigateTo]);
 
-	const handleOpenSeerr = useCallback(() => {
-		navigateTo(PANELS.SEERR_DISCOVER);
+	// EsPlay: the navigation's requests entry, where Seerr was, opens the panel's own requests.
+	const handleOpenRequests = useCallback(() => {
+		navigateTo(PANELS.ESPLAY_REQUESTS);
 	}, [navigateTo]);
 
 	const handleHome = useCallback(() => {
@@ -1767,6 +1771,7 @@ const AppContent = (props) => {
 			case PANELS.SEERR_REQUESTS:
 			case PANELS.SEERR_BROWSE:
 			case PANELS.SEERR_PERSON:
+			case PANELS.ESPLAY_REQUESTS:
 				return 'discover';
 			case PANELS.LIBRARY: return selectedLibrary?.Id || '';
 			default: return '';
@@ -1801,7 +1806,7 @@ const AppContent = (props) => {
 					onGenres={handleOpenGenres}
 					onFavorites={handleOpenFavorites}
 					onLiveTv={handleOpenLiveTv}
-					onDiscover={handleOpenSeerr}
+					onDiscover={handleOpenRequests}
 					onSyncPlay={settings.syncplayEnabled !== false ? openSyncPlay : undefined}
 					onSettings={handleOpenSettings}
 					onSelectLibrary={handleSelectLibrary}
@@ -1823,7 +1828,7 @@ const AppContent = (props) => {
 					onGenres={handleOpenGenres}
 					onFavorites={handleOpenFavorites}
 					onLiveTv={handleOpenLiveTv}
-					onDiscover={handleOpenSeerr}
+					onDiscover={handleOpenRequests}
 					onSyncPlay={settings.syncplayEnabled !== false ? openSyncPlay : undefined}
 					onSettings={handleOpenSettings}
 					onSelectLibrary={handleSelectLibrary}
@@ -2043,7 +2048,13 @@ const AppContent = (props) => {
 								/>
 							)}
 						</Panel>
+						<Panel>
+							{panelIndex === PANELS.ESPLAY_REQUESTS && (
+								<EsplayRequests onSelectItem={handleSelectItem} backHandlerRef={backHandlerRef} />
+							)}
+						</Panel>
 					</Panels>
+					<EsplayReportDialog />
 				</Suspense>
 				{/* Its own boundary, so a screen loading for the first time can't swap out music playing behind it. */}
 				<Suspense fallback={<PanelLoader />}>
