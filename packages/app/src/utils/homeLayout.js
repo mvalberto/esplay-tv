@@ -17,7 +17,7 @@
 
 import {PICK_SOURCES, isPickedRow, isSeerrSliderRow, makePickedRow, makeSeerrSliderRow} from './pickedRows';
 
-export const DEFAULT_HOME_ROWS = [
+const MOONFIN_HOME_ROWS = [
 	{id: 'resume', name: 'Continue Watching', enabled: true, order: 0},
 	{id: 'nextup', name: 'Next Up', enabled: true, order: 1},
 	{id: 'latest-media', name: 'Recently Added Media', enabled: true, order: 2},
@@ -87,6 +87,16 @@ export const DEFAULT_HOME_ROWS = [
 	{id: 'seasonal', name: 'Seasonal Row', enabled: false, order: 64},
 	{id: 'onnow', name: 'On Now', enabled: false, order: 65}
 ];
+
+// EsPlay's starting Home: these rows in this order, the rest off.
+const ESPLAY_HOME_ROWS = ['collections', 'resume', 'livetv', 'onnow', 'favoriteSeries', 'favoriteMovies', 'latest-media', 'genres'];
+
+export const DEFAULT_HOME_ROWS = MOONFIN_HOME_ROWS
+	.map((row) => {
+		const at = ESPLAY_HOME_ROWS.indexOf(row.id);
+		return {...row, enabled: at >= 0, order: at >= 0 ? at : ESPLAY_HOME_ROWS.length + row.order};
+	})
+	.sort((a, b) => a.order - b.order);
 
 export const TV_TO_SERVER_ROW = {
 	'latest-media': 'latestmedia',

@@ -330,10 +330,12 @@ describe('the home rows and media bar ratings settings', () => {
 		mediaBarShowRatingBadges: 'mediaBarMdblistShowRatingBadges'
 	};
 
-	test('default like the plain ones, except home rows start with labels off', () => {
+	test('default like the plain ones, except home rows start with labels off and without Metacritic', () => {
 		for (const local of Object.keys(SERVER_KEYS)) {
 			const plain = local.replace(/^(homeRows|mediaBar)(.)/, (all, surface, first) => first.toLowerCase());
-			const expected = local === 'homeRowsShowRatingLabels' ? false : defaultSettings[plain];
+			const expected = local === 'homeRowsShowRatingLabels' ? false :
+				local === 'homeRowsMdblistRatingSources' ? ['stars', 'imdb', 'tmdb', 'tomatoes'] :
+					defaultSettings[plain];
 			expect({local, value: defaultSettings[local]}).toEqual({local, value: expected});
 		}
 	});

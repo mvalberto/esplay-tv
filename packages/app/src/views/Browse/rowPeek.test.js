@@ -20,7 +20,7 @@ describe('rowPeekHeight', () => {
 	});
 
 	test('modern rows show the title and half of a poster at the chosen size', () => {
-		expect(peek({homeRowsStyle: 'v2'})).toBe(230);
+		expect(peek({homeRowsStyle: 'v2', homeRowsPosterSize: 'default'})).toBe(230);
 		expect(peek({homeRowsStyle: 'v2', homeRowsPosterSize: 'large'})).toBe(266);
 	});
 
