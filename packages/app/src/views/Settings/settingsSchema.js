@@ -1125,11 +1125,12 @@ export const SETTINGS_SCHEMA = [
 						label: () => $L('Platform'),
 						value: (ctx) => (ctx.capabilities?.tizenVersionDisplay ? 'Tizen' : ctx.capabilities?.webosVersionDisplay ? 'webOS' : ctx.capabilities?.vegaVersionDisplay ? 'Fire TV' : ctx.capabilities?.xboxVersionDisplay ? 'Xbox' : $L('Unknown'))
 					},
+					{kind: KIND.NAV, id: 'esplaySourceCode', label: () => $L('Source Code'), desc: () => 'github.com/mvalberto/esplay-tv', icon: 'code', action: (ctx) => ctx.actions.openQrLink($L('Source Code'), 'https://github.com/mvalberto/esplay-tv', 'setting-esplaySourceCode')},
 					{kind: KIND.NAV, id: 'sourceCode', label: () => $L('Based on Moonfin'), desc: () => 'github.com/Moonfin-Client/Smart-TV', icon: 'code', action: (ctx) => ctx.actions.openQrLink($L('Based on Moonfin'), 'https://github.com/Moonfin-Client/Smart-TV', 'setting-sourceCode')},
 					{kind: KIND.NAV, id: 'diagnosticsLogging', label: () => $L('Diagnostics & Logging'), desc: () => $L('Capture media, login and network logs and send them to the server as a report'), icon: 'troubleshoot', action: (ctx) => ctx.actions.openScreen('about', 'diagnostics', 'setting-diagnosticsLogging')},
 					{kind: KIND.NAV, id: 'runSetupAgain', label: () => $L('Run setup again'), icon: 'auto_awesome', when: esplayHidden, action: (ctx) => ctx.actions.runSetupAgain()},
 					{kind: KIND.SECTION, id: 'legal', label: () => $L('LEGAL')},
-					{kind: KIND.NAV, id: 'licenses', label: () => $L('Licenses'), desc: () => $L('Open-source license notices'), icon: 'description', action: (ctx) => ctx.actions.openQrLink($L('Licenses'), 'https://github.com/Moonfin-Client/Smart-TV/blob/main/LICENSE', 'setting-licenses')},
+					{kind: KIND.NAV, id: 'licenses', label: () => $L('Licenses'), desc: () => $L('Open-source license notices'), icon: 'description', action: (ctx) => ctx.actions.openQrLink($L('Licenses'), 'https://github.com/mvalberto/esplay-tv/blob/esplay/LICENSE', 'setting-licenses')},
 					{kind: KIND.SECTION, id: 'server', label: () => $L('Server')},
 					{kind: KIND.INFO, id: 'serverUrl', label: () => $L('Server URL'), value: (ctx) => ctx.serverUrl || $L('Not connected'), icon: 'dns'},
 					{kind: KIND.INFO, id: 'serverVersion', label: () => $L('Server Version'), value: (ctx) => ctx.serverVersion || $L('Loading...'), icon: 'dns'},
